@@ -94,6 +94,18 @@ namespace sg {
 			isPresent = false;
 			index = -1;
 		}
+
+		sg::Texture(char* name) {
+			map = name;
+			isPresent = false;
+			index = -1;
+		}
+
+		sg::Texture(int unit) {
+			map = NULL;
+			isPresent = true;
+			index = unit;
+		}
 	};
 
 	struct Material {

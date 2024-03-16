@@ -234,6 +234,17 @@ namespace sg {
         }
     }
 
+    void BindTextureRGBA(int textureUnit, unsigned int texture, int width, int height, unsigned char* data) {
+        glActiveTexture(GL_TEXTURE0 + textureUnit);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+
     void BindTexture(int textureUnit, unsigned int texture, int width, int height, unsigned char* data) {
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -259,28 +270,40 @@ namespace sg {
         stbi_image_free(data);
     }
 
-    int SetTexturesData(sg::Model model, GLuint programID, int startingTexture = 0) {
-        glUseProgram(programID);
+    void SetTextureRGBA(const char* filename, int textureUnit) {
+        int width, height, nrChannels;
+        unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+        if (data) {
+            unsigned int texture;
+            glGenTextures(1, &texture);
+            BindTextureRGBA(textureUnit, texture, width, height, data);
+        }
+        else {
+            printf("Failed to load texture %s\n", filename);
+        }
+        stbi_image_free(data);
+    }
+
+    void SetTexturesData(sg::Model model, int &startingTexture) {
         for (int i = 0; i < model.GetNMaterials(); i++) {
             printf("Adding texture, current index: %d\n", startingTexture);
             sg::Material* mat = model.GetMaterialReferenceAt(i);
-            if (mat->texture_Kd.isPresent) {
-                SetTexture(mat->texture_Kd.map, startingTexture);
+            if (mat->texture_Kd.isPresent && mat->texture_Kd.map != NULL) {
+                SetTextureRGBA(mat->texture_Kd.map, startingTexture);
                 mat->texture_Kd.index = startingTexture;
                 startingTexture++;
             }
             if (mat->texture_Ks.isPresent) {
-                SetTexture(mat->texture_Ks.map, startingTexture);
+                SetTextureRGBA(mat->texture_Ks.map, startingTexture);
                 mat->texture_Ks.index = startingTexture;
                 startingTexture++;
             }
             if (mat->texture_Ka.isPresent) {
-                SetTexture(mat->texture_Ka.map, startingTexture);
+                SetTextureRGBA(mat->texture_Ka.map, startingTexture);
                 mat->texture_Ka.index = startingTexture;
                 startingTexture++;
             }
         }
-        return startingTexture;
     }
 
     void SetMaterialData(GLuint programId, sg::Material mat) {

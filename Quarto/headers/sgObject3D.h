@@ -11,7 +11,7 @@ namespace sg {
 	class Object3D {
 	private:
 		static unsigned int nextId;
-		int _id; // TODO testare
+		int _id;
 		glm::mat4 _modelMatrix;
 		Transform _transform;
 		Model _model3D;
@@ -99,6 +99,15 @@ namespace sg {
 
 		void SetPatches(int p) {
 			_patches = p;
+		}
+
+		Model GetModel() {
+			return _model3D;
+		}
+
+		glm::mat4 GetModelMatrix() {
+			BuildModelMatrix();
+			return _modelMatrix;
 		}
 
 		void Translate(float x, float y, float z) { _transform.Translate(x, y, z); }

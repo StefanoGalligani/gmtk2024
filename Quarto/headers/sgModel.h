@@ -104,7 +104,7 @@ namespace sg {
 			fopen_s(&fp, (folderStr + fileStr).c_str(), "r");
 			return fp;
 		}
-		void Concat(char** dest, const char* first, const char* second) {
+		void Concat(char** dest, const char* first, const char* second, bool addSlash = true) {
 			char full[50];
 			int i = 0;
 			char c;
@@ -112,8 +112,10 @@ namespace sg {
 				full[i] = c;
 				i++;
 			}
-			full[i] = '/';
-			i++;
+			if (addSlash) {
+				full[i] = '/';
+				i++;
+			}
 			int j = 0;
 			while ((c = *(second + j)) != '\0') {
 				full[i + j] = c;
@@ -214,7 +216,7 @@ namespace sg {
 			if (buffer.IsCommand("mtllib")) {
 				const char* mtlFilename = buffer.Data(7);
 				ReadMaterial(folder, mtlFilename);
-			} else if (buffer.IsCommand("g")) {
+			} else if (buffer.IsCommand("g") || buffer.IsCommand("o")) {
 				printf("Reading new object: ");
 				if (currentMesh != NULL) {
 					currentMesh -> triangles = (Triangle*)malloc(sizeof(Triangle) * currentTriangles.size());
@@ -412,7 +414,7 @@ namespace sg {
 			}
 			else if (buffer.IsCommand("map_Kd")) {
 				Texture t_kd = Texture();
-				Concat(&(t_kd.map), folder, buffer.Data(7));
+				Concat(&(t_kd.map), folder, buffer.Data(7), false);
 				t_kd.isPresent = true;
 				currentMat->texture_Kd = t_kd;
 			}

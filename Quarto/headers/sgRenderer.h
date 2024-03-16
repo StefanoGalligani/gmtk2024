@@ -25,7 +25,7 @@ namespace sg {
 
         Camera3D* _mainCamera;
         SpotLight3D* _spotLight;
-        Object3D* _objects[2];
+        Object3D* _objects[3];
         int _objectsCount = 0;
 
         double _timestep = 1000.0 / 40;
@@ -75,43 +75,11 @@ namespace sg {
             return 0;
         }
 
-        void SetDisplacementUniforms(int textureUnit) {
-            glUseProgram(_shadowedProgram);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "displacementTexture"), textureUnit);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "displacementTextureSet"), 1);
-            glUniform1f(glGetUniformLocation(_shadowedProgram, "displacementValue"), 8);
-            glUseProgram(_triangulationProgram);
-            glUniform1i(glGetUniformLocation(_triangulationProgram, "displacementTexture"), textureUnit);
-            glUniform1i(glGetUniformLocation(_triangulationProgram, "displacementTextureSet"), 1);
-            glUniform1f(glGetUniformLocation(_triangulationProgram, "displacementValue"), 8);
-            glUseProgram(_depthProgram);
-            glUniform1i(glGetUniformLocation(_depthProgram, "displacementTexture"), textureUnit);
-            glUniform1i(glGetUniformLocation(_depthProgram, "displacementTextureSet"), 1);
-            glUniform1f(glGetUniformLocation(_depthProgram, "displacementValue"), 8);
-        }
-
-        void UpdateTessellationLevel(int newLevel) {
-            _tessellationLevel = newLevel;
-            glUseProgram(_triangulationProgram);
-            glUniform1f(glGetUniformLocation(_triangulationProgram, "level"), _tessellationLevel);
-            glUseProgram(_shadowedProgram);
-            glUniform1f(glGetUniformLocation(_shadowedProgram, "level"), _tessellationLevel);
-            glUseProgram(_depthProgram);
-            glUniform1f(glGetUniformLocation(_depthProgram, "level"), _tessellationLevel);
-        }
-
         void InitPrograms() {
-            _shadowedProgram = sg::CreateProgram("shaders/vertexShader_normalmapping.glsl", "shaders/fragmentShader_normalmapping.glsl"
-                , "shaders/tessellationControlShader_normalMapping.glsl", "shaders/tessellationEvaluationShader_normalMapping.glsl"
-            );
-            _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl"
-                , "shaders/tessellationControlShader_quad.glsl", "shaders/tessellationEvaluationShader_quad.glsl"
-            );
+            _shadowedProgram = sg::CreateProgram("shaders/vertexShader_shadowed.glsl", "shaders/fragmentShader_shadowed.glsl");
+            _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl");
             _unlitProgram = sg::CreateProgram("shaders/vertexShader_unlit.glsl", "shaders/fragmentShader_unlit.glsl");
-            _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl",
-                "shaders/tessellationControlShader_quad.glsl", "shaders/tessellationEvaluationShader_quad.glsl", "shaders/geometryShader_triangulation.glsl");
-
-            UpdateTessellationLevel(1);
+            _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl");
         }
 
         void SetAmbientLight(float l) {
@@ -135,6 +103,7 @@ namespace sg {
 
             _objects[_objectsCount] = obj;
             _objectsCount++;
+            SetTexturesData(obj->GetModel(), _textureCount);
         }
         
         void SetSpotLight(SpotLight3D* light) {
@@ -159,19 +128,20 @@ namespace sg {
             glViewport(0, 0, _spotLight->GetShadowWidth(), _spotLight->GetShadowHeight());
 
             for (int i = 0; i < _objectsCount; i++) {
-                if (_objects[i]->CastsShadows)
+                if (_objects[i]->CastsShadows) {
                     _objects[i]->Draw(_spotLight->GetViewProjection(), _depthProgram);
+                }
             }
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _origFB);
             glViewport(0, 0, _width, _height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            sg::SetMatrix(_mainCamera->GetView(), _shadowedProgram, "mv");
-            sg::SetMatrix(_spotLight->GetShadow(), _shadowedProgram, "shadowMatrix");
             for (int i = 0; i < _objectsCount; i++) {
                 if (_objects[i]->Lit) {
                     if (_objects[i]->ReceivesShadows) {
+                        sg::SetMatrix(_mainCamera->GetView() * _objects[i]->GetModelMatrix(), _shadowedProgram, "mv");
+                        sg::SetMatrix(_spotLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "shadowMatrix");
                         _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
                     } else {
                         //shadowed unlit
@@ -199,30 +169,6 @@ namespace sg {
             std::this_thread::sleep_for(std::chrono::milliseconds((long)sleepTime));
 
             return (int)(1000 / (sleepTime + elapsed)); //prima era long, non so se int va bene, testare
-        }
-
-        void IncreaseTessellationLevel() {
-            _tessellationLevel++;
-            if (_tessellationLevel > 64) _tessellationLevel = 64;
-            UpdateTessellationLevel(_tessellationLevel);
-        }
-
-        void DecreaseTessellationLevel() {
-            _tessellationLevel--;
-            if (_tessellationLevel < 1) _tessellationLevel = 1;
-            UpdateTessellationLevel(_tessellationLevel);
-        }
-
-        void SetNormalTexture(const char* filename) {
-            sg::SetTexture(filename, _textureCount);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "normalTexture"), _textureCount);
-            _textureCount++;
-        }
-
-        void SetDisplacementTexture(const char* filename) {
-            sg::SetTexture(filename, _textureCount);
-            SetDisplacementUniforms(_textureCount);
-            _textureCount++;
         }
 
         void SetupShadows(sg::SpotLight3D* light, int shadowResx, int shadowResy) {

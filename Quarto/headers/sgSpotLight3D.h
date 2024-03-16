@@ -45,8 +45,8 @@ namespace sg {
 		void LookAt(glm::vec3 target) {
 			_viewMatrix = glm::lookAt(_transform.localPosition, target, glm::vec3(0, 1, 0));
 			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
-			//TODO: in futuro dovrà prendere la posizione globale, non quella locale
-			_bias = (1.0f / glm::length(_transform.localPosition)) * 0.03;
+			//TODO: in futuro dovrà prendere la posizione globale della luce, non quella locale
+			_bias = (1.0f / (glm::length2(_transform.localPosition)+1)) * 0.1;
 			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f - _bias)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * _viewProjectionMatrix;
 		}
 
