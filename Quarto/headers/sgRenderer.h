@@ -25,13 +25,11 @@ namespace sg {
 
         Camera3D* _mainCamera;
         SpotLight3D* _spotLight;
-        Object3D* _objects[3];
+        Object3D* _objects[20];
         int _objectsCount = 0;
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
-
-        int _textureCount = 0;
 
     public:
         int InitWindow(const char* title, int width, int height) {
@@ -103,7 +101,6 @@ namespace sg {
 
             _objects[_objectsCount] = obj;
             _objectsCount++;
-            SetTexturesData(obj->GetModel(), _textureCount);
         }
         
         void SetSpotLight(SpotLight3D* light) {
@@ -172,10 +169,9 @@ namespace sg {
         }
 
         void SetupShadows(sg::SpotLight3D* light, int shadowResx, int shadowResy) {
-            light->SetupShadows(shadowResx, shadowResy, _textureCount);
+            light->SetupShadows(shadowResx, shadowResy, 3); //il 3 è arbitrario, poi andrà fatto gestire al TextureManager
             glUseProgram(_shadowedProgram);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), _textureCount);
-            _textureCount++;
+            glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), 3);
         }
 	};
 }

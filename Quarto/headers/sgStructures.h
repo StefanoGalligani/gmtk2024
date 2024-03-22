@@ -33,6 +33,7 @@ namespace sg {
 				glTexParameterf(textureType, GL_TEXTURE_MAX_ANISOTROPY, 5);
 
 				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+				textureUnit++;
 			}
 			if (createDepthMap) {
 				hasDepthMap = true;
@@ -87,24 +88,28 @@ namespace sg {
 	struct Texture {
 		char* map;
 		bool isPresent;
-		int index;
+		bool isLoaded;
+		GLuint index;
 
 		sg::Texture() {
 			map = NULL;
 			isPresent = false;
+			isLoaded = false;
 			index = -1;
 		}
 
 		sg::Texture(char* name) {
 			map = name;
 			isPresent = false;
+			isLoaded = false;
 			index = -1;
 		}
 
-		sg::Texture(int unit) {
+		sg::Texture(GLuint ind) {
 			map = NULL;
 			isPresent = true;
-			index = unit;
+			isLoaded = false;
+			index = ind;
 		}
 	};
 

@@ -11,3 +11,4 @@ newmtl white_wood
 	d 1.000000
 	illum 2
 	map_Kd white_wood.png
+	map_Ka white_wood.png

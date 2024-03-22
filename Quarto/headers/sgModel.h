@@ -7,6 +7,16 @@
 namespace sg {
 
 	class Model {
+	private:
+		unsigned int _nVertices;
+		unsigned int _nMaterials;
+		unsigned int _nMeshes;
+		Vertex* _vertices;
+		Material* _materials;
+		Mesh* _meshes;
+		glm::vec3 _lowerBound;
+		glm::vec3 _upperBound;
+
 	public:
 		Model() { _nVertices = 0; _nMeshes = 0; _nMaterials = 0; _vertices = NULL;  _meshes = NULL;  _materials = NULL; }
 		unsigned int GetNVertices() { return _nVertices; }
@@ -17,13 +27,13 @@ namespace sg {
 		Mesh GetMeshAt(unsigned int index) { return _meshes[index]; }
 		Material GetMaterialAt(unsigned int index) { return _materials[index]; }
 		Material *GetMaterialReferenceAt(unsigned int index) { return &_materials[index]; }
-		Material GetMaterialByName(const char* name) {
+		Material *GetMaterialByName(const char* name) {
 			for (int i = 0; i < _nMaterials; i++) {
 				if (strcmp(name, _materials[i].name) == 0) {
-					return _materials[i];
+					return &_materials[i];
 				}
 			}
-			return _materials[0];
+			return &_materials[0];
 		}
 		glm::vec3 GetBoundingBoxLower() { return _lowerBound; }
 		glm::vec3 GetBoundingBoxUpper() { return _upperBound; }
@@ -62,14 +72,6 @@ namespace sg {
 		bool LoadFromObj(char const* filename, bool invertYZ = false);
 
 	private:
-		unsigned int _nVertices;
-		unsigned int _nMaterials;
-		unsigned int _nMeshes;
-		Vertex* _vertices;
-		Material* _materials;
-		Mesh* _meshes;
-		glm::vec3 _lowerBound;
-		glm::vec3 _upperBound;
 		void ClearData() { free(_vertices); free(_meshes); free(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(); _upperBound = glm::vec3(); }
 		bool ReadMaterial(char const* folder, char const* filename);
 		void SeparateFolderFromFilename(char** folder, char const** filename) {

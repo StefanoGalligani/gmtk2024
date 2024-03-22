@@ -1,6 +1,6 @@
 #pragma once
 #include <sgModel.h>
-#include <sgUtils.h>
+#include <sgTextureManager.h>
 #include <sgTransform.h>
 #include <glm/glm/glm.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
@@ -166,7 +166,7 @@ namespace sg {
 				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 5));
 				for (int i = 0; i < _model3D.GetNMeshes(); i++) {
 					sg::Mesh m = _model3D.GetMeshAt(i);
-					sg::SetMaterialData(program, _model3D.GetMaterialByName(m.materialName));
+					sg::TextureManager::Instance()->SetMaterialData(program, _model3D.GetMaterialByName(m.materialName));
 					if (_patches > 0) {
 						glDrawArrays(GL_PATCHES, 0, _patches);
 					} else {

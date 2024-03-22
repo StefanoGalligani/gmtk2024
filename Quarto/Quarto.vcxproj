@@ -145,6 +145,7 @@
     <ClInclude Include="headers\sgUtils.h" />
     <ClInclude Include="headers\stb_image.h" />
     <ClInclude Include="headers\sgTransform.h" />
+    <ClInclude Include="headers\sgTextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragmentShader_depth.glsl" />
