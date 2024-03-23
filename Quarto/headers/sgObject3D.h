@@ -14,7 +14,7 @@ namespace sg {
 		int _id;
 		glm::mat4 _modelMatrix;
 		Transform _transform;
-		Model _model3D;
+		Model* _model3D;
 		int _patches;
 		int _childrenCount;
 		int _childrenArraySize;
@@ -68,7 +68,7 @@ namespace sg {
 		Object3D() : _id(nextId++) {
 			_modelMatrix = glm::mat4(1);
 			_transform = Transform();
-			_model3D = Model();
+			_model3D = NULL;
 			_childrenCount = 0;
 			_childrenArraySize = 0;
 			_children = NULL;
@@ -82,26 +82,36 @@ namespace sg {
 		void SetVbo(GLuint vbo) {
 			_vbo = vbo;
 			glBindBuffer(GL_ARRAY_BUFFER, vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(sg::Vertex) * _model3D.GetNVertices(), _model3D.GetVertices(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(sg::Vertex) * _model3D->GetNVertices(), _model3D->GetVertices(), GL_STATIC_DRAW);
 		}
 
 		bool LoadModelFromObj(const char* path) {
-			return _model3D.LoadFromObj(path);
+			_model3D = (Model*)malloc(sizeof(Model));
+			*_model3D = Model();
+			return _model3D->LoadFromObj(path);
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Triangle triangles[], int nTriangles) {
-			_model3D.InitFromVerticesAndTriangles(vertices, nVertices, triangles, nTriangles);
+			_model3D = (Model*)malloc(sizeof(Model));
+			*_model3D = Model();
+			_model3D->InitFromVerticesAndTriangles(vertices, nVertices, triangles, nTriangles);
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Material materials[], int nMaterials, sg::Mesh meshes[], int nMeshes) {
-			_model3D.InitFromVerticesMaterialsAndMeshes(vertices, nVertices, materials, nMaterials, meshes, nMeshes);
+			_model3D = (Model*)malloc(sizeof(Model));
+			*_model3D = Model();
+			_model3D->InitFromVerticesMaterialsAndMeshes(vertices, nVertices, materials, nMaterials, meshes, nMeshes);
+		}
+
+		void SetModel(sg::Model* model) {
+			_model3D = model;
 		}
 
 		void SetPatches(int p) {
 			_patches = p;
 		}
 
-		Model GetModel() {
+		Model* GetModel() {
 			return _model3D;
 		}
 
@@ -164,9 +174,9 @@ namespace sg {
 				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)0);
 				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 3));
 				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 5));
-				for (int i = 0; i < _model3D.GetNMeshes(); i++) {
-					sg::Mesh m = _model3D.GetMeshAt(i);
-					sg::TextureManager::Instance()->SetMaterialData(program, _model3D.GetMaterialByName(m.materialName));
+				for (int i = 0; i < _model3D->GetNMeshes(); i++) {
+					sg::Mesh m = _model3D->GetMeshAt(i);
+					sg::TextureManager::Instance()->SetMaterialData(program, _model3D->GetMaterialByName(m.materialName));
 					if (_patches > 0) {
 						glDrawArrays(GL_PATCHES, 0, _patches);
 					} else {

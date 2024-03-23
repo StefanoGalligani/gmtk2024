@@ -10,17 +10,17 @@
 #include <sgSpotLight3D.h>
 #include <sgUtils.h>
 #include <sgRenderer.h>
+#include <Board.h>
 
 #include <iostream>
 #include <chrono>
 #include <thread>
 
 sg::Renderer renderer = sg::Renderer();
-sg::Object3D boardObj = sg::Object3D();
-sg::Object3D pieceObjs[16];
 sg::Object3D lightObj = sg::Object3D();
 sg::Camera3D mainCamera = sg::Camera3D();
 sg::SpotLight3D spotLight = sg::SpotLight3D();
+Board board = Board();
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -99,41 +99,10 @@ void mouseDragListener(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void InitObjects() {
-    printf("Initializing buffers\n");
-    boardObj.LoadModelFromObj("res/models/board.obj");
-    boardObj.SetLocalScale(50, 50, 50);
-    boardObj.CastsShadows = true;
-    boardObj.ReceivesShadows = true;
-    boardObj.Lit = true;
+    printf("Initializing objects\n");
 
     lightObj.LoadModelFromObj("res/light/light.obj");
     lightObj.SetLocalPosition(0, 30, 60);
-
-    for (int i = 0; i < 16; i++) {
-        pieceObjs[i] = sg::Object3D();
-        pieceObjs[i].SetLocalPosition(-18.5 + 12.5 * (i / 4), 0.01, -18.5 + 12.5 * (i % 4));
-        pieceObjs[i].SetLocalScale(50, 50, 50);
-        pieceObjs[i].CastsShadows = true;
-        pieceObjs[i].ReceivesShadows = true;
-        pieceObjs[i].Lit = true;
-    }
-
-    pieceObjs[0].LoadModelFromObj("res/models/piece_0000.obj");
-    pieceObjs[1].LoadModelFromObj("res/models/piece_0001.obj");
-    pieceObjs[2].LoadModelFromObj("res/models/piece_0010.obj");
-    pieceObjs[3].LoadModelFromObj("res/models/piece_0011.obj");
-    pieceObjs[4].LoadModelFromObj("res/models/piece_1100.obj");
-    pieceObjs[5].LoadModelFromObj("res/models/piece_1101.obj");
-    pieceObjs[6].LoadModelFromObj("res/models/piece_1110.obj");
-    pieceObjs[7].LoadModelFromObj("res/models/piece_1111.obj");
-    pieceObjs[8].LoadModelFromObj("res/models/piece_0000.obj");
-    pieceObjs[9].LoadModelFromObj("res/models/piece_0001.obj");
-    pieceObjs[10].LoadModelFromObj("res/models/piece_0010.obj");
-    pieceObjs[11].LoadModelFromObj("res/models/piece_0011.obj");
-    pieceObjs[12].LoadModelFromObj("res/models/piece_1100.obj");
-    pieceObjs[13].LoadModelFromObj("res/models/piece_1101.obj");
-    pieceObjs[14].LoadModelFromObj("res/models/piece_1110.obj");
-    pieceObjs[15].LoadModelFromObj("res/models/piece_1111.obj");
 
     mainCamera.SetPerspective(9.0f / 4, (float)resx / resy, 0.05f, 3000.0f);
     mainCamera.SetLocalPosition(glm::vec3(0, 30, 55));
@@ -143,12 +112,11 @@ void InitObjects() {
     spotLight.SetLocalPosition(lightObj.GetLocalPosition());
     spotLight.LookAt(glm::vec3(0, 0, 0));
 
-    renderer.AddObject(&boardObj);
-    for (int i=0; i<16; i++)
-        renderer.AddObject(&pieceObjs[i]);
     renderer.AddObject(&lightObj);
     renderer.SetMainCamera(&mainCamera);
     renderer.SetSpotLight(&spotLight);
+
+    board.Init(&renderer);
 
     printf("Buffers ready\n");
 }
