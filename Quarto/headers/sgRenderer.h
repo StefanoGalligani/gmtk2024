@@ -94,10 +94,7 @@ namespace sg {
         }
 
         void AddObject(Object3D* obj) {
-            glBindVertexArray(_vao);
-            GLuint VBO;
-            glGenBuffers(1, &VBO);
-            obj->SetVbo(VBO);
+            obj->GetModel()->SetVBO(_vao);
 
             _objects[_objectsCount] = obj;
             _objectsCount++;

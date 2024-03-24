@@ -16,9 +16,10 @@ namespace sg {
 		Mesh* _meshes;
 		glm::vec3 _lowerBound;
 		glm::vec3 _upperBound;
+		GLuint _vbo;
 
 	public:
-		Model() { _nVertices = 0; _nMeshes = 0; _nMaterials = 0; _vertices = NULL;  _meshes = NULL;  _materials = NULL; }
+		Model() { _nVertices = 0; _nMeshes = 0; _nMaterials = 0; _vertices = NULL;  _meshes = NULL;  _materials = NULL; _vbo = -1; }
 		unsigned int GetNVertices() { return _nVertices; }
 		unsigned int GetNMaterials() { return _nMaterials; }
 		unsigned int GetNMeshes() { return _nMeshes; }
@@ -70,6 +71,17 @@ namespace sg {
 			_nMeshes = nMeshes;
 		}
 		bool LoadFromObj(char const* filename, bool invertYZ = false);
+		void SetVBO(GLuint vao) {
+			if (_vbo == -1) {
+				glBindVertexArray(vao);
+				glGenBuffers(1, &_vbo);
+				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(sg::Vertex) * _nVertices, _vertices, GL_STATIC_DRAW);
+			}
+		}
+		GLuint GetVBO() {
+			return _vbo;
+		}
 
 	private:
 		void ClearData() { free(_vertices); free(_meshes); free(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(); _upperBound = glm::vec3(); }

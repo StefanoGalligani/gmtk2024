@@ -19,7 +19,6 @@ namespace sg {
 		int _childrenCount;
 		int _childrenArraySize;
 		Object3D *_children;
-		GLuint _vbo;
 
 		glm::mat4 BuildRotationMatrix() {
 			return glm::inverse(glm::lookAt(glm::vec3(0), _transform.forward, _transform.up));
@@ -72,17 +71,10 @@ namespace sg {
 			_childrenCount = 0;
 			_childrenArraySize = 0;
 			_children = NULL;
-			_vbo = -1;
 			_patches = 0;
 			CastsShadows = false;
 			ReceivesShadows = false;
 			Lit = false;
-		}
-
-		void SetVbo(GLuint vbo) {
-			_vbo = vbo;
-			glBindBuffer(GL_ARRAY_BUFFER, vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(sg::Vertex) * _model3D->GetNVertices(), _model3D->GetVertices(), GL_STATIC_DRAW);
 		}
 
 		bool LoadModelFromObj(const char* path) {
@@ -170,7 +162,7 @@ namespace sg {
 				glUseProgram(program);
 				glUniformMatrix4fv(glGetUniformLocation(program, "mvp"), 1, false, glm::value_ptr(mvp));
 
-				glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+				glBindBuffer(GL_ARRAY_BUFFER, _model3D->GetVBO());
 				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)0);
 				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 3));
 				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 5));
