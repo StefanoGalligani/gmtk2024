@@ -27,15 +27,7 @@ namespace sg {
 		Vertex GetVertexAt(unsigned int index) { return _vertices[index]; }
 		Mesh GetMeshAt(unsigned int index) { return _meshes[index]; }
 		Material GetMaterialAt(unsigned int index) { return _materials[index]; }
-		Material *GetMaterialReferenceAt(unsigned int index) { return &_materials[index]; }
-		Material *GetMaterialByName(const char* name) {
-			for (int i = 0; i < _nMaterials; i++) {
-				if (strcmp(name, _materials[i].name) == 0) {
-					return &_materials[i];
-				}
-			}
-			return &_materials[0];
-		}
+
 		glm::vec3 GetBoundingBoxLower() { return _lowerBound; }
 		glm::vec3 GetBoundingBoxUpper() { return _upperBound; }
 		glm::vec3 GetBoundingBoxCenter() { return (_upperBound+_lowerBound) * 0.5f; }

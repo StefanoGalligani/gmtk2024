@@ -15,6 +15,8 @@ namespace sg {
 		glm::mat4 _modelMatrix;
 		Transform _transform;
 		Model* _model3D;
+		Material* _materials;
+		unsigned int _nMaterials;
 		int _patches;
 		int _childrenCount;
 		int _childrenArraySize;
@@ -59,6 +61,14 @@ namespace sg {
 			return true;
 		}
 
+		void CopyMaterialsFromModel() {
+			_nMaterials = _model3D->GetNMaterials();
+			_materials = (Material*)malloc(sizeof(Material) * _nMaterials);
+			for (int i = 0; i < _nMaterials; i++) {
+				_materials[i] = _model3D->GetMaterialAt(i);
+			}
+		}
+
 	public:
 		bool CastsShadows;
 		bool ReceivesShadows;
@@ -80,23 +90,65 @@ namespace sg {
 		bool LoadModelFromObj(const char* path) {
 			_model3D = (Model*)malloc(sizeof(Model));
 			*_model3D = Model();
-			return _model3D->LoadFromObj(path);
+			if (_model3D->LoadFromObj(path)) {
+				CopyMaterialsFromModel();
+				return true;
+			}
+			return false;
+
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Triangle triangles[], int nTriangles) {
 			_model3D = (Model*)malloc(sizeof(Model));
 			*_model3D = Model();
 			_model3D->InitFromVerticesAndTriangles(vertices, nVertices, triangles, nTriangles);
+			CopyMaterialsFromModel();
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Material materials[], int nMaterials, sg::Mesh meshes[], int nMeshes) {
 			_model3D = (Model*)malloc(sizeof(Model));
 			*_model3D = Model();
 			_model3D->InitFromVerticesMaterialsAndMeshes(vertices, nVertices, materials, nMaterials, meshes, nMeshes);
+			CopyMaterialsFromModel();
 		}
 
 		void SetModel(sg::Model* model) {
 			_model3D = model;
+			CopyMaterialsFromModel();
+		}
+
+		Material GetMaterialAt(unsigned int index) { return _materials[index]; }
+
+		Material* GetMaterialReferenceAt(unsigned int index) { return &_materials[index]; }
+
+		Material* GetMaterialByName(const char* name) {
+			for (int i = 0; i < _nMaterials; i++) {
+				if (strcmp(name, _materials[i].name) == 0) {
+					return &_materials[i];
+				}
+			}
+			return &_materials[0];
+		}
+
+		void ChangeMaterial(const char* name, Material newMat) {
+			Material* old = GetMaterialByName(name);
+			old->Ka[0] = newMat.Ka[0]; old->Ka[1] = newMat.Ka[1];  old->Ka[2] = newMat.Ka[2];
+			old->Kd[0] = newMat.Kd[0]; old->Kd[1] = newMat.Kd[1];  old->Kd[2] = newMat.Kd[2];
+			old->Ks[0] = newMat.Ks[0]; old->Ks[1] = newMat.Ks[1];  old->Ks[2] = newMat.Ks[2];
+			old->Ke[0] = newMat.Ke[0]; old->Ke[1] = newMat.Ke[1];  old->Ke[2] = newMat.Ke[2];
+			old->Tf[0] = newMat.Tf[0]; old->Tf[1] = newMat.Tf[1];  old->Tf[2] = newMat.Tf[2];
+			old->Ns = newMat.Ns;
+			old->Ni = newMat.Ni;
+			old->illum = newMat.illum;
+			old->d = newMat.d;
+			old->Tr = newMat.Tr;
+			old->texture_Ka = newMat.texture_Ka;
+			old->texture_Kd = newMat.texture_Kd;
+			old->texture_Ks = newMat.texture_Ks;
+			old->texture_Ns = newMat.texture_Ns;
+			old->texture_d = newMat.texture_d;
+			old->texture_bump = newMat.texture_bump;
+			old->texture_disp = newMat.texture_disp;
 		}
 
 		void SetPatches(int p) {
@@ -168,7 +220,7 @@ namespace sg {
 				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)(sizeof(float) * 5));
 				for (int i = 0; i < _model3D->GetNMeshes(); i++) {
 					sg::Mesh m = _model3D->GetMeshAt(i);
-					sg::TextureManager::Instance()->SetMaterialData(program, _model3D->GetMaterialByName(m.materialName));
+					sg::TextureManager::Instance()->SetMaterialData(program, GetMaterialByName(m.materialName));
 					if (_patches > 0) {
 						glDrawArrays(GL_PATCHES, 0, _patches);
 					} else {
