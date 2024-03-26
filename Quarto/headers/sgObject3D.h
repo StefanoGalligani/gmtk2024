@@ -18,9 +18,7 @@ namespace sg {
 		Material* _materials;
 		unsigned int _nMaterials;
 		int _patches;
-		int _childrenCount;
-		int _childrenArraySize;
-		Object3D *_children;
+		//std::vector<Object3D*> _children;
 
 		glm::mat4 BuildRotationMatrix() {
 			return glm::inverse(glm::lookAt(glm::vec3(0), _transform.forward, _transform.up));
@@ -32,32 +30,29 @@ namespace sg {
 				* glm::scale(_transform.localScale);
 		}
 
-		void CreateChildrenArray(int n) {
-			_childrenArraySize = n;
-			_children = (Object3D*)malloc(sizeof(Object3D) * n);
-		}
-
-		void IncreaseChildrenArraySize() {
-			Object3D* _newPtr = (Object3D*)malloc(sizeof(Object3D) * 2 * _childrenArraySize);
-			for (int i = 0; i < _childrenCount; i++) {
-				_newPtr[i] = _children[i];
+		bool FrustumCheck(glm::mat4 mvp) {
+			glm::vec3 points[8];
+			points[0] = _model3D->GetBoundingBoxLower();
+			points[7] = _model3D->GetBoundingBoxUpper();
+			glm::vec3 lower = glm::vec3(2, 2, 2);
+			glm::vec3 upper = glm::vec3(-2, -2, -2);
+			for (int i = 1; i < 7; i++) {
+				points[i] = glm::vec3(points[7 * ((i / 4) % 2)].x, points[7 * ((i / 2) % 2)].y, points[7 * (i % 2)].z);
 			}
-			free(_children);
-			_childrenArraySize *= 2;
-			_children = _newPtr;
-		}
-
-		void DecreaseChildrenArraySize() {
-			Object3D* _newPtr = (Object3D*)malloc(sizeof(Object3D) * _childrenArraySize / 2);
-			for (int i = 0; i < _childrenCount; i++) {
-				_newPtr[i] = _children[i];
+			for (int i = 0; i < 8; i++) {
+				glm::vec4 v = mvp * glm::vec4(points[i], 1);
+				v.x = v.x / v.w; v.y = v.y / v.w; v.z = v.z / v.w;
+				if (v.x < lower.x) lower.x = v.x;
+				if (v.y < lower.y) lower.y = v.y;
+				if (v.z < lower.z) lower.z = v.z;
+				if (v.x > upper.x) upper.x = v.x;
+				if (v.y > upper.y) upper.y = v.y;
+				if (v.z > upper.z) upper.z = v.z;
 			}
-			free(_children);
-			_childrenArraySize /= 2;
-			_children = _newPtr;
-		}
-
-		bool FrustumCheck(glm::mat4 viewProjection) {
+			if (lower.x > 1 || lower.y > 1 || lower.z > 1 || upper.x < -1 || upper.y < -1 || upper.z < -1) {
+				//printf("Model not rendered: %s\n", _model3D->GetMeshAt(0).name);
+				return false;
+			}
 			return true;
 		}
 
@@ -78,9 +73,6 @@ namespace sg {
 			_modelMatrix = glm::mat4(1);
 			_transform = Transform();
 			_model3D = NULL;
-			_childrenCount = 0;
-			_childrenArraySize = 0;
-			_children = NULL;
 			_patches = 0;
 			CastsShadows = false;
 			ReceivesShadows = false;
@@ -186,31 +178,18 @@ namespace sg {
 		glm::vec3 Up() { return _transform.up; }
 		glm::vec3 Right() { return _transform.right; }
 
-		void AddChild(Object3D child) {
-			if (_childrenArraySize == 0) CreateChildrenArray(2);
-			if (_childrenCount == _childrenArraySize) IncreaseChildrenArraySize();
-			_children[_childrenCount] = child;
-			_childrenCount++;
-		}
+		//void AddChild(Object3D* child) {
+			//_children.push_back(child);
+		//}
 
-		bool RemoveChild(Object3D child) {
-			for (int i = 0; i < _childrenCount; i++) {
-				if (_children[i]._id == child._id) {
-					for (int j = i; j < _childrenCount-1; j++) {
-						_children[j] = _children[j + 1];
-					}
-					_childrenCount--;
-					if (_childrenCount < _childrenArraySize / 4) DecreaseChildrenArraySize();
-					return true;
-				}
-			}
-			return false;
-		}
+		//void RemoveChild(Object3D* child) {
+			//_children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
+		//}
 
 		void Draw(glm::mat4 vp, GLuint program) {
 			BuildModelMatrix();
 			glm::mat4 mvp = vp * _modelMatrix;
-			if (FrustumCheck(vp)) {
+			if (FrustumCheck(mvp)) {
 				glUseProgram(program);
 				glUniformMatrix4fv(glGetUniformLocation(program, "mvp"), 1, false, glm::value_ptr(mvp));
 
@@ -229,9 +208,9 @@ namespace sg {
 				}
 			}
 
-			for (int i = 0; i < _childrenCount; i++) {
-				_children[i].Draw(mvp, program);
-			}
+			//for (int i = 0; i < _children.size(); i++) {
+			//	_children[i]->Draw(mvp, program);
+			//}
 		}
 	};
 	unsigned int Object3D::nextId;

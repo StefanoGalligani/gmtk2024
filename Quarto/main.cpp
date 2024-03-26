@@ -104,7 +104,7 @@ void InitObjects() {
     lightObj.LoadModelFromObj("res/light/light.obj");
     lightObj.SetLocalPosition(0, 30, 60);
 
-    mainCamera.SetPerspective(9.0f / 4, (float)resx / resy, 0.05f, 3000.0f);
+    mainCamera.SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
     mainCamera.SetLocalPosition(glm::vec3(0, 30, 55));
     mainCamera.LookAt(glm::vec3(0, 0, 0));
 
