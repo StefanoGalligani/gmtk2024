@@ -25,8 +25,7 @@ namespace sg {
 
         Camera3D* _mainCamera;
         SpotLight3D* _spotLight;
-        Object3D* _objects[20];
-        int _objectsCount = 0;
+        std::vector<Object3D*> _objects;
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
@@ -77,7 +76,7 @@ namespace sg {
             _shadowedProgram = sg::CreateProgram("shaders/vertexShader_shadowed.glsl", "shaders/fragmentShader_shadowed.glsl");
             _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl");
             _unlitProgram = sg::CreateProgram("shaders/vertexShader_unlit.glsl", "shaders/fragmentShader_unlit.glsl");
-            _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl");
+            _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl", "shaders/geometryShader_triangulation.glsl");
         }
 
         void SetAmbientLight(float l) {
@@ -95,9 +94,7 @@ namespace sg {
 
         void AddObject(Object3D* obj) {
             obj->GetModel()->SetVBO(_vao);
-
-            _objects[_objectsCount] = obj;
-            _objectsCount++;
+            _objects.push_back(obj);
         }
         
         void SetSpotLight(SpotLight3D* light) {
@@ -121,7 +118,7 @@ namespace sg {
             glClear(GL_DEPTH_BUFFER_BIT);
             glViewport(0, 0, _spotLight->GetShadowWidth(), _spotLight->GetShadowHeight());
 
-            for (int i = 0; i < _objectsCount; i++) {
+            for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->CastsShadows) {
                     _objects[i]->Draw(_spotLight->GetViewProjection(), _depthProgram);
                 }
@@ -131,7 +128,7 @@ namespace sg {
             glViewport(0, 0, _width, _height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (int i = 0; i < _objectsCount; i++) {
+            for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {
                     if (_objects[i]->ReceivesShadows) {
                         sg::SetMatrix(_mainCamera->GetView() * _objects[i]->GetModelMatrix(), _shadowedProgram, "mv");
@@ -151,7 +148,7 @@ namespace sg {
             }
 
             if (_showTriangulation) {
-                for (int i = 0; i < _objectsCount; i++) {
+                for (int i = 0; i < _objects.size(); i++) {
                     _objects[i]->Draw(_mainCamera->GetViewProjection(), _triangulationProgram);
                 }
             }
