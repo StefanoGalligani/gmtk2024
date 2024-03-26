@@ -6,30 +6,21 @@
 namespace sg {
     class TextureManager {
     private:
-        static TextureManager* _instance;
+        static TextureManager _instance;
         static bool _initialized;
-        Texture* _loadedTextures;
-        int _texturesCount;
-        int _arrayLength;
+        std::vector<Texture> _loadedTextures;
 
-        TextureManager(int size) {
-            _arrayLength = size;
-            _loadedTextures = (Texture*)malloc(sizeof(Texture) * size);
-
-            _texturesCount = 0;
+        TextureManager() {
+            
         }
 
     public:
-
-        ~TextureManager() {
-            free(_loadedTextures);
-        }
 
         static TextureManager* Instance();
 
 	private:
         GLuint CheckIfAlreadyLoaded(const char* filename) {
-            for (int i = 0; i < _texturesCount; i++) {
+            for (int i = 0; i < _loadedTextures.size(); i++) {
                 char* name = _loadedTextures[i].map;
                 int j = 0;
                 bool found = true;
@@ -110,7 +101,7 @@ namespace sg {
                 mat->texture_Kd.index = index;
                 mat->texture_Kd.isLoaded = true;
                 if (!wasPresent) {
-                    _loadedTextures[_texturesCount++] = mat->texture_Kd;
+                    _loadedTextures.push_back(mat->texture_Kd);
                 }
             }
             if (mat->texture_Ks.isPresent && !mat->texture_Ks.isLoaded) {
@@ -122,7 +113,7 @@ namespace sg {
                 mat->texture_Ks.index = index;
                 mat->texture_Ks.isLoaded = true;
                 if (!wasPresent) {
-                    _loadedTextures[_texturesCount++] = mat->texture_Ks;
+                    _loadedTextures.push_back(mat->texture_Ks);
                 }
             }
             if (mat->texture_Ka.isPresent && !mat->texture_Ka.isLoaded) {
@@ -134,7 +125,7 @@ namespace sg {
                 mat->texture_Ka.index = index;
                 mat->texture_Ka.isLoaded = true;
                 if (!wasPresent) {
-                    _loadedTextures[_texturesCount++] = mat->texture_Ka;
+                    _loadedTextures.push_back(mat->texture_Ka);
                 }
             }
         }
@@ -243,15 +234,14 @@ namespace sg {
         }
 	};
 
-    TextureManager* TextureManager::_instance = NULL;
+    TextureManager TextureManager::_instance = TextureManager::TextureManager();
     bool TextureManager::_initialized = false;
 
     TextureManager* TextureManager::Instance() {
         if (!TextureManager::_initialized) {
-            TextureManager::_instance = (TextureManager*)malloc(sizeof(TextureManager));
-            *TextureManager::_instance = TextureManager(10);
+            TextureManager::_instance = TextureManager();
             TextureManager::_initialized = true;
         }
-        return TextureManager::_instance;
+        return &TextureManager::_instance;
     }
 }
