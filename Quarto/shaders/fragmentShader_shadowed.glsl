@@ -27,7 +27,6 @@ void main() {
 	vec3 albedo = (dTextureSet == 1) ? texture(dTexture, textureC).xyz * Kd : Kd;
 	vec3 specular = (sTextureSet == 1) ? texture(sTexture, textureC).xyz * Ks : Ks;
 	vec3 ambient = (aTextureSet == 1) ? texture(aTexture, textureC).xyz * Ka : Ka;
-	float ambientLight = 0.2;
 	float intensity = 0.9;
 
 	vec3 lightDir = normalize(lightPos - viewPosition);

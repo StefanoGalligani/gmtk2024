@@ -15,6 +15,7 @@ namespace sg {
         GLuint _depthProgram;
         GLuint _unlitProgram;
         GLuint _triangulationProgram;
+        GLuint _backgroundProgram;
         bool _showTriangulation;
 
         GLFWwindow* _window;
@@ -22,6 +23,10 @@ namespace sg {
         int _width;
         int _height;
         GLuint _vao;
+        GLuint _skyboxTexture = -1;
+        Vertex _backgroundVertices[3];
+        Triangle _backgroundTriangles[1];
+        GLuint _backgroundVBO = -1;
 
         Camera3D* _mainCamera;
         SpotLight3D* _spotLight;
@@ -77,6 +82,7 @@ namespace sg {
             _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl");
             _unlitProgram = sg::CreateProgram("shaders/vertexShader_unlit.glsl", "shaders/fragmentShader_unlit.glsl");
             _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl", "shaders/geometryShader_triangulation.glsl");
+            _backgroundProgram = sg::CreateProgram("shaders/vertexShader_background.glsl", "shaders/fragmentShader_background.glsl");
         }
 
         void SetAmbientLight(float l) {
@@ -153,6 +159,20 @@ namespace sg {
                 }
             }
 
+            if (_skyboxTexture != -1) {
+                glUseProgram(_backgroundProgram);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, _skyboxTexture); 
+                glUniform1i(glGetUniformLocation(_backgroundProgram, "skybox"), 0);
+                glUniform1i(glGetUniformLocation(_backgroundProgram, "skyboxSet"), 1);
+
+                glm::mat3 matrixPV = glm::inverse(glm::mat3(_mainCamera->GetViewProjection()));
+                glUniformMatrix3fv(glGetUniformLocation(_backgroundProgram, "toWorld"), 1, false, glm::value_ptr(matrixPV));
+                glBindBuffer(GL_ARRAY_BUFFER, _backgroundVBO);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(sg::Vertex), (GLvoid*)0);
+                glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, _backgroundTriangles);
+            }
+
             glfwSwapBuffers(_window);
 
             double elapsed = (sg::getCurrentTimeMillis() - start);
@@ -166,6 +186,23 @@ namespace sg {
             light->SetupShadows(shadowResx, shadowResy, 3); //il 3 è arbitrario, poi andrà fatto gestire al TextureManager
             glUseProgram(_shadowedProgram);
             glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), 3);
+        }
+
+        void SetSkybox() {
+            const char* textureFaces[6] =
+            { "res/skybox/posx.jpg", "res/skybox/negx.jpg", "res/skybox/posy.jpg",
+              "res/skybox/negy.jpg", "res/skybox/posz.jpg", "res/skybox/negz.jpg" };
+            _skyboxTexture = TextureManager::Instance()->SetCubemap(textureFaces);
+
+            _backgroundVertices[0] = sg::Vertex{ glm::vec3(-1, -1, 1-1e-5), glm::vec2(0, 0), glm::vec3(0,0,1) };
+            _backgroundVertices[1] = sg::Vertex{ glm::vec3(-1, 3, 1 - 1e-5), glm::vec2(0, 1), glm::vec3(0,0,1) };
+            _backgroundVertices[2] = sg::Vertex{ glm::vec3(3, -1, 1 - 1e-5), glm::vec2(1, 0), glm::vec3(0,0,1) };
+            _backgroundTriangles[0] = sg::Triangle{ {0,2,1} };
+
+            glBindVertexArray(_vao);
+            glGenBuffers(1, &_backgroundVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, _backgroundVBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sg::Vertex) * 3, _backgroundVertices, GL_STATIC_DRAW);
         }
 	};
 }

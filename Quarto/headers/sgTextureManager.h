@@ -130,10 +130,10 @@ namespace sg {
             }
         }
 
-        void SetCubemap(int textureUnit) {
+        GLuint SetCubemap(const char* textures_faces[6]) {
             GLuint texID;
             glGenTextures(1, &texID);
-            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -145,8 +145,6 @@ namespace sg {
 
             int width, height, nrChannels;
             unsigned char* data;
-            const char* textures_faces[6] = { "res/cubemap/cubemap_posx.png", "res/cubemap/cubemap_negx.png", "res/cubemap/cubemap_posy.png",
-                                            "res/cubemap/cubemap_negy.png", "res/cubemap/cubemap_posz.png", "res/cubemap/cubemap_negz.png" };
             for (unsigned int i = 0; i < 6; i++)
             {
                 data = stbi_load(textures_faces[i], &width, &height, &nrChannels, 0);
@@ -155,27 +153,13 @@ namespace sg {
                         GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
                     );
+                    //free(data); TODO dopo che funziona provare a rimetterlo
                 }
                 else {
                     printf("Failed to load texture %s\n", textures_faces[i]);
                 }
             }
-        }
-
-        void SetSkyboxMaterial(int textureUnit, GLuint backgroundProgram = -1, GLuint reflectiveProgram = -1) {
-            printf("Setting skybox\n");
-            SetCubemap(textureUnit);
-
-            if (backgroundProgram > 0) {
-                glUseProgram(backgroundProgram);
-                glUniform1i(glGetUniformLocation(backgroundProgram, "skybox"), textureUnit);
-                glUniform1i(glGetUniformLocation(backgroundProgram, "skyboxSet"), 1);
-            }
-            if (reflectiveProgram > 0) {
-                glUseProgram(reflectiveProgram);
-                glUniform1i(glGetUniformLocation(reflectiveProgram, "skybox"), textureUnit);
-                glUniform1i(glGetUniformLocation(reflectiveProgram, "skyboxSet"), 1);
-            }
+            return texID;
         }
 
         void SetMaterialData(GLuint programId, Material* mat) {

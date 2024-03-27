@@ -131,8 +131,9 @@ int main(int argc, char* argv[]) {
     glfwSetWindowSizeCallback(renderer.GetWindow(), windowResizeListener);
 
     InitObjects();
-    renderer.SetAmbientLight(0.2);
+    renderer.SetAmbientLight(0.5f);
     renderer.SetupShadows(&spotLight, shadowResx, shadowResy);
+    renderer.SetSkybox();
 
     printf("Starting rendering\n");
     while (!glfwWindowShouldClose(renderer.GetWindow()))
