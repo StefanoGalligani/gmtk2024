@@ -141,6 +141,7 @@
     <ClInclude Include="headers\sgCamera3D.h" />
     <ClInclude Include="headers\sgModel.h" />
     <ClInclude Include="headers\sgObject3D.h" />
+    <ClInclude Include="headers\sgSkyboxRenderer.h" />
     <ClInclude Include="headers\sgSpotLight3D.h" />
     <ClInclude Include="headers\sgStructures.h" />
     <ClInclude Include="headers\sgUtils.h" />

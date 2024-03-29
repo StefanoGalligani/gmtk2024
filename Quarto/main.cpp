@@ -37,7 +37,8 @@ float shadowResy = 2048;
 void windowResizeListener(GLFWwindow* window, int x, int y) {
     resx = x;
     resy = y;
-    glViewport(0, 0, resx, resy);
+    renderer.SetResolution(resx, resy);
+    mainCamera.SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
 }
 
 void keyListener(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -133,7 +134,7 @@ int main(int argc, char* argv[]) {
     InitObjects();
     renderer.SetAmbientLight(0.5f);
     renderer.SetupShadows(&spotLight, shadowResx, shadowResy);
-    renderer.SetSkybox();
+    renderer.SetSkybox("res/skybox/posx.png", "res/skybox/negx.png", "res/skybox/posy.png", "res/skybox/negy.png", "res/skybox/posz.png", "res/skybox/negz.png");
 
     printf("Starting rendering\n");
     while (!glfwWindowShouldClose(renderer.GetWindow()))

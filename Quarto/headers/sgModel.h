@@ -441,6 +441,7 @@ namespace sg {
 			i++;
 		}
 		printf("Materials read: %d\n", _nMaterials);
+		return true;
 	}
 
 }
