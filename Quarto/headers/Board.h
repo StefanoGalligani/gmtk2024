@@ -1,6 +1,4 @@
 #pragma once
-#include <sgObject3D.h>
-#include <sgRenderer.h>
 
 class Board {
 private:
@@ -19,6 +17,13 @@ public:
         int ind1 = board[p1x][p1y];
         board[p1x][p1y] = board[p2x][p2y];
         board[p2x][p2y] = ind1;
+    }
+
+    void PositionPieces(int pieces[16]) {
+        for (int i = 0; i < 16; i++) {
+            pieceObjs[pieces[i]]->SetLocalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
+            board[i / 4][i % 4] = pieces[i];
+        }
     }
 
     void Init(sg::Renderer *renderer) {
@@ -62,10 +67,8 @@ public:
             pieceObjs[i]->ChangeMaterial(white.name, black);
         }
 
-        SwapPieces(0, 1, 0, 2);
-        SwapPieces(1, 1, 1, 2);
-        SwapPieces(2, 1, 2, 2);
-        SwapPieces(3, 1, 3, 2);
+        int newOrder[16] = { 1, 0, 2, 3, 4, 5, 7, 6, 12, 13, 15, 14, 9, 8, 10, 11 };
+        PositionPieces(newOrder);
 
         renderer->AddObject(boardObj);
         for (int i = 0; i < 16; i++)

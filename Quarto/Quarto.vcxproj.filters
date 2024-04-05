@@ -56,6 +56,12 @@
     <ClInclude Include="headers\sgSkyboxRenderer.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="headers\sgEngine.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\sgInputManager.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertexShader_lit.glsl">

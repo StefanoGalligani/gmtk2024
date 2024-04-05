@@ -1,20 +1,5 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <wtypes.h>
-#include <glm/glm/glm.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-#include <glm/glm/gtc/type_ptr.hpp>
-#include <glm/glm/gtx/vector_angle.hpp>
-#include <sgObject3D.h>
-#include <sgCamera3D.h>
-#include <sgSpotLight3D.h>
-#include <sgUtils.h>
-#include <sgRenderer.h>
+#include <sgEngine.h>
 #include <Board.h>
-
-#include <iostream>
-#include <chrono>
-#include <thread>
 
 sg::Renderer renderer = sg::Renderer();
 sg::Object3D lightObj = sg::Object3D();
@@ -34,37 +19,41 @@ float resy = 720;
 float shadowResx = 2048;
 float shadowResy = 2048;
 
-void windowResizeListener(GLFWwindow* window, int x, int y) {
+void onWindowResize(int x, int y) {
     resx = x;
     resy = y;
     renderer.SetResolution(resx, resy);
     mainCamera.SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
 }
 
-void keyListener(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == 341) {
-        pressedCTRL = (action == 1);
-    }
-    if (key == 32 && action == 1) {
-        showTriangulation = !showTriangulation;
-        renderer.SetShowTriangulation(showTriangulation);
-    }
-    if (key == 256) {
-        glfwDestroyWindow(window);
-    }
-    std::cout << "Key: " << key << std::endl;
+void onSpaceKeyPressed(int mods) {
+    showTriangulation = !showTriangulation;
+    renderer.SetShowTriangulation(showTriangulation);
 }
 
-void mouseButtonListener(GLFWwindow* window, int button, int action, int mods) {
-    if (button == 0) {
-        pressedL = action;
-    }
-    if (button == 1) {
-        pressedR = action;
-    }
+void onEscKeyPressed(int mods) {
+    glfwDestroyWindow(renderer.GetWindow());
 }
 
-void mouseDragListener(GLFWwindow* window, double xpos, double ypos) {
+void onLeftMouseButtonClick(int mods) {
+    pressedL = true;
+    pressedCTRL = (mods & GLFW_MOD_CONTROL) > 0;
+}
+
+void onLeftMouseButtonRelease(int mods) {
+    pressedL = false;
+}
+
+void onRightMouseButtonClick(int mods) {
+    pressedR = true;
+    pressedCTRL = (mods & GLFW_MOD_CONTROL) > 0;
+}
+
+void onRightMouseButtonRelease(int mods) {
+    pressedR = false;
+}
+
+void onMouseDrag(double xpos, double ypos) {
     if (pressedCTRL) {
         if (pressedL) {
             double movex = (xpos - prevx) / resx;
@@ -122,16 +111,23 @@ void InitObjects() {
     printf("Buffers ready\n");
 }
 
+void BindInputs() {
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Key_Esc_Down, onEscKeyPressed);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Key_Space_Down, onSpaceKeyPressed);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Mouse_Left_Down, onLeftMouseButtonClick);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Mouse_Left_Up, onLeftMouseButtonRelease);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Mouse_Right_Down, onRightMouseButtonClick);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Mouse_Right_Up, onRightMouseButtonRelease);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Mouse_Position, onMouseDrag);
+    sg::InputManager::Instance()->BindInput(renderer.GetWindow(), sg::Window_Resize, onWindowResize);
+}
+
 int main(int argc, char* argv[]) {
     if (renderer.InitWindow("Quarto", resx, resy) < 0) return -1;
     renderer.InitPrograms();
-
-    glfwSetKeyCallback(renderer.GetWindow(), keyListener);
-    glfwSetMouseButtonCallback(renderer.GetWindow(), mouseButtonListener);
-    glfwSetCursorPosCallback(renderer.GetWindow(), mouseDragListener);
-    glfwSetWindowSizeCallback(renderer.GetWindow(), windowResizeListener);
-
+    BindInputs();
     InitObjects();
+
     renderer.SetAmbientLight(0.5f);
     renderer.SetupShadows(&spotLight, shadowResx, shadowResy);
     renderer.SetSkybox("res/skybox/posx.png", "res/skybox/negx.png", "res/skybox/posy.png", "res/skybox/negy.png", "res/skybox/posz.png", "res/skybox/negz.png");
