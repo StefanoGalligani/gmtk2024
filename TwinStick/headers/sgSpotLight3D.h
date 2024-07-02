@@ -51,8 +51,7 @@ namespace sg {
 		}
 
 		void SetupShadows(int width, int height, int textureUnit) {
-			_depthBuffer = (FrameBuffer*)malloc(sizeof(FrameBuffer));
-			*_depthBuffer = sg::FrameBuffer(width, height, textureUnit, false, true, false, false);
+			_depthBuffer = new sg::FrameBuffer(width, height, textureUnit, false, true, false, false);
 			_shadowWidth = width;
 			_shadowHeight = height;
 		}
@@ -98,5 +97,9 @@ namespace sg {
 		void SetLocalScale(float x, float y, float z) { _transform.localScale = glm::vec3(x, y, z); }
 		void SetLocalScale(glm::vec3 scale) { _transform.localScale = scale; }
 		void SetLocalUniformScale(float s) { _transform.localScale = glm::vec3(s, s, s); }
+
+		~SpotLight3D() {
+			delete(_depthBuffer);
+		}
 	};
 }

@@ -35,30 +35,26 @@ namespace sg {
 			_vertices = vertices;
 			_nVertices = nVertices;
 
-			Material mat = Material();
-			mat.name = new char[8] {'d','e','f','a','u','l','t','\0'};
-			_materials = (Material*)malloc(sizeof(Material));
-			_materials[0] = mat;
+			_materials = new Material[1];
+			_materials[0].name = new char[8] {'d', 'e', 'f', 'a', 'u', 'l', 't', '\0'};
 			_nMaterials = 1;
 
-			Mesh m = Mesh();
-			m.triangles = triangles;
-			m.nTriangles = nTriangles;
-			m.materialName = mat.name;
-			m.hasMaterial = true;
-			_meshes = (Mesh*)malloc(sizeof(Mesh));
-			_meshes[0] = m;
+			_meshes = new Mesh[1];
+			_meshes[0].triangles = triangles;
+			_meshes[0].nTriangles = nTriangles;
+			_meshes[0].materialName = _materials[0].name;
+			_meshes[0].hasMaterial = true;
 			_nMeshes = 1;
 		}
 		void InitFromVerticesMaterialsAndMeshes(sg::Vertex vertices[], int nVertices, sg::Material materials[], int nMaterials, sg::Mesh meshes[], int nMeshes) {
 			_vertices = vertices;
 			_nVertices = nVertices;
 
-			_materials = (Material*)malloc(sizeof(Material)*nMaterials);
+			_materials = new Material[nMaterials];
 			for (int i=0; i<nMaterials; i++) _materials[i] = materials[i];
 			_nMaterials = nMaterials;
 
-			_meshes = (Mesh*)malloc(sizeof(Mesh) * nMeshes);
+			_meshes = new Mesh[nMeshes];
 			for (int i = 0; i < nMaterials; i++) _meshes[i] = meshes[i];
 			_nMeshes = nMeshes;
 		}
@@ -74,9 +70,14 @@ namespace sg {
 		GLuint GetVBO() {
 			return _vbo;
 		}
+		void Destroy() {
+			delete(_vertices);
+			delete(_meshes);
+			delete(_materials);
+		}
 
 	private:
-		void ClearData() { free(_vertices); free(_meshes); free(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(); _upperBound = glm::vec3(); }
+		void ClearData() { delete(_vertices); delete(_meshes); delete(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(); _upperBound = glm::vec3(); }
 		bool ReadMaterial(char const* folder, char const* filename);
 		void SeparateFolderFromFilename(char** folder, char const** filename) {
 			int lastDiv = -1;
@@ -88,7 +89,7 @@ namespace sg {
 				}
 				i++;
 			}
-			(*folder) = (char *)malloc(sizeof(char) * (lastDiv+2));
+			(*folder) = new char[lastDiv+2];
 			for (i = 0; i < lastDiv+1; i++) {
 				(*folder)[i] = (*filename)[i];
 			}
@@ -128,7 +129,7 @@ namespace sg {
 				j++;
 			}
 			full[i + j] = '\0';
-			*dest = (char*)malloc(sizeof(char) * (i + j + 1));
+			*dest = new char[i + j + 1];
 			strcpy_s(*dest, i+j+1, full);
 		}
 	};
@@ -183,7 +184,7 @@ namespace sg {
 			while (data[start] != '\0' && data[start] <= ' ') start++;
 			int i = 0;
 			while (data[start+i] != '\0') i++;
-			*str = (char *)malloc(sizeof(char) * (i+1));
+			*str = new char[i + 1];
 			for (int j = 0; j < i+1; j++) {
 				(*str)[j] = data[start+j];
 			}
@@ -225,7 +226,7 @@ namespace sg {
 			} else if (buffer.IsCommand("g") || buffer.IsCommand("o")) {
 				printf("Reading new object: ");
 				if (currentMesh != NULL) {
-					currentMesh -> triangles = (Triangle*)malloc(sizeof(Triangle) * currentTriangles.size());
+					currentMesh -> triangles = new Triangle[currentTriangles.size()];
 					currentMesh -> nTriangles = currentTriangles.size();
 					int i = 0;
 					for (Triangle t : currentTriangles) {
@@ -235,9 +236,8 @@ namespace sg {
 					currentTriangles.clear();
 					meshList.push_back(*currentMesh);
 				}
-				Mesh m = Mesh();
 				meshCount++;
-				currentMesh = &m;
+				currentMesh = new Mesh();
 				buffer.DeepCopy(&(currentMesh->name), 2);
 				printf("%s\n", currentMesh->name);
 			} else if (buffer.IsCommand("usemtl")) {
@@ -267,7 +267,7 @@ namespace sg {
 				int vIndex = 0;
 				while (true) {
 					if (line[i] == ' ' || line[i] == '\0') {
-						triples[vIndex] = (char *)malloc(sizeof(char) * (i - tripleStart + 1));
+						triples[vIndex] = new char[i - tripleStart + 1];
 						for (int j = tripleStart; j < i; j++) {
 							triples[vIndex][j - tripleStart] = line[j];
 						}
@@ -332,7 +332,7 @@ namespace sg {
 			}
 		}
 		if (currentMesh != NULL) {
-			currentMesh->triangles = (Triangle*)malloc(sizeof(Triangle) * currentTriangles.size());
+			currentMesh->triangles = new Triangle[currentTriangles.size()];
 			currentMesh->nTriangles = currentTriangles.size();
 			int i = 0;
 			for (Triangle t : currentTriangles) {
@@ -342,14 +342,14 @@ namespace sg {
 			meshList.push_back(*currentMesh);
 		}
 		printf("File read\n");
-		_vertices = (Vertex*)malloc(sizeof(Vertex) * vertexList.size());
+		_vertices = new Vertex[vertexList.size()];
 		_nVertices = vertexList.size();
 		int i = 0;
 		for (Vertex v : vertexList) {
 			_vertices[i] = v;
 			i++;
 		}
-		_meshes = (Mesh*)malloc(sizeof(Mesh) * meshList.size());
+		_meshes = new Mesh[meshList.size()];
 		_nMeshes = meshList.size();
 		i = 0;
 		for (Mesh m : meshList) {
@@ -377,9 +377,8 @@ namespace sg {
 		while (int rb = buffer.ReadLine(fp)) {
 			if (buffer.IsCommand("newmtl")) {
 				if (currentMat != NULL) matList.push_back(*currentMat);
-				Material m = Material();
 				matCount++;
-				currentMat = &m;
+				currentMat = new Material();
 				buffer.DeepCopy(&(currentMat->name), 7);
 			}
 			else if (buffer.IsCommand("Ka")) {
@@ -434,7 +433,7 @@ namespace sg {
 		if (currentMat != NULL) matList.push_back(*currentMat);
 
 		_nMaterials = matCount;
-		_materials = (Material*)malloc(sizeof(Material) * _nMaterials);
+		_materials = new Material[_nMaterials];
 		int i = 0;
 		for (Material m : matList) {
 			_materials[i] = m;

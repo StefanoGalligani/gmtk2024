@@ -27,8 +27,7 @@ public:
     }
 
     void Init(sg::Renderer *renderer) {
-        boardObj = (sg::Object3D*)malloc(sizeof(sg::Object3D));
-        *boardObj = sg::Object3D();
+        boardObj = new sg::Object3D();
         boardObj->LoadModelFromObj("res/models/board.obj");
         boardObj->SetLocalScale(50, 50, 50);
         boardObj->CastsShadows = true;
@@ -36,8 +35,7 @@ public:
         boardObj->Lit = true;
 
         for (int i = 0; i < 16; i++) {
-            pieceObjs[i] = (sg::Object3D*)malloc(sizeof(sg::Object3D));
-            *pieceObjs[i] = sg::Object3D();
+            pieceObjs[i] = new sg::Object3D();
             pieceObjs[i]->SetLocalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
             pieceObjs[i]->SetLocalScale(50, 50, 50);
             pieceObjs[i]->CastsShadows = true;
@@ -73,6 +71,13 @@ public:
         renderer->AddObject(boardObj);
         for (int i = 0; i < 16; i++)
             renderer->AddObject(pieceObjs[i]);
+    }
+
+    ~Board() {
+        for (int i = 0; i < 16; i++) {
+            free(pieceObjs[i]);
+        }
+        free(boardObj);
     }
 
 };

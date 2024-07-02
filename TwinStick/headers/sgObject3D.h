@@ -14,8 +14,8 @@ namespace sg {
 		int _id;
 		glm::mat4 _modelMatrix;
 		Transform _transform;
-		Model* _model3D;
-		Material* _materials;
+		Model* _model3D = NULL;
+		Material* _materials = NULL;
 		unsigned int _nMaterials;
 		int _patches;
 		//std::vector<Object3D*> _children;
@@ -80,8 +80,7 @@ namespace sg {
 		}
 
 		bool LoadModelFromObj(const char* path) {
-			_model3D = (Model*)malloc(sizeof(Model));
-			*_model3D = Model();
+			_model3D = new Model();
 			if (_model3D->LoadFromObj(path)) {
 				CopyMaterialsFromModel();
 				return true;
@@ -91,15 +90,13 @@ namespace sg {
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Triangle triangles[], int nTriangles) {
-			_model3D = (Model*)malloc(sizeof(Model));
-			*_model3D = Model();
+			_model3D = new Model();
 			_model3D->InitFromVerticesAndTriangles(vertices, nVertices, triangles, nTriangles);
 			CopyMaterialsFromModel();
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Material materials[], int nMaterials, sg::Mesh meshes[], int nMeshes) {
-			_model3D = (Model*)malloc(sizeof(Model));
-			*_model3D = Model();
+			_model3D = new Model();
 			_model3D->InitFromVerticesMaterialsAndMeshes(vertices, nVertices, materials, nMaterials, meshes, nMeshes);
 			CopyMaterialsFromModel();
 		}
@@ -212,7 +209,12 @@ namespace sg {
 			//	_children[i]->Draw(mvp, program);
 			//}
 		}
+
+		~Object3D() {
+			if(_model3D) _model3D->Destroy();
+			delete(_model3D);
+			free(_materials);
+		}
 	};
 	unsigned int Object3D::nextId;
-
 }
