@@ -138,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="headers\Board.h" />
     <ClInclude Include="headers\sgEngine.h" />
+    <ClInclude Include="headers\sgEntity3D.h" />
     <ClInclude Include="headers\sgInputManager.h" />
     <ClInclude Include="headers\sgRenderer.h" />
     <ClInclude Include="headers\sgCamera3D.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="headers\sgSpotLight3D.h" />
     <ClInclude Include="headers\sgStructures.h" />
     <ClInclude Include="headers\sgUtils.h" />
+    <ClInclude Include="headers\sgView3D.h" />
     <ClInclude Include="headers\stb_image.h" />
     <ClInclude Include="headers\sgTransform.h" />
     <ClInclude Include="headers\sgTextureManager.h" />

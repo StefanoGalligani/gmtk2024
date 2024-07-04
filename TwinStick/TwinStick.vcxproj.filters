@@ -62,6 +62,12 @@
     <ClInclude Include="headers\sgInputManager.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="headers\sgEntity3D.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\sgView3D.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertexShader_lit.glsl">

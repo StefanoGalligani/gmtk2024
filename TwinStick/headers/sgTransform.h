@@ -1,11 +1,6 @@
 #pragma once
 #include <glm/glm/glm.hpp>
 
-/*
-TODO:
-	metodi per rotazione
-*/
-
 namespace sg {
 	struct Transform {
 	public:

@@ -1,34 +1,16 @@
 #pragma once
+#include <sgEntity3D.h>
 #include <sgModel.h>
 #include <sgTextureManager.h>
-#include <sgTransform.h>
-#include <glm/glm/glm.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-#include <glm/glm/gtx/euler_angles.hpp>
-#include <glm/glm/gtx/vector_angle.hpp>
 
 namespace sg {
-	class Object3D {
+	class Object3D : public Entity3D {
 	private:
-		static unsigned int nextId;
-		int _id;
-		glm::mat4 _modelMatrix;
-		Transform _transform;
 		Model* _model3D = NULL;
 		Material* _materials = NULL;
 		unsigned int _nMaterials;
 		int _patches;
-		//std::vector<Object3D*> _children;
-
-		glm::mat4 BuildRotationMatrix() {
-			return glm::inverse(glm::lookAt(glm::vec3(0), _transform.forward, _transform.up));
-		}
-
-		void BuildModelMatrix() {
-			_modelMatrix = glm::translate(_transform.localPosition)
-				* BuildRotationMatrix()
-				* glm::scale(_transform.localScale);
-		}
+		glm::mat4 _modelMatrix;
 
 		bool FrustumCheck(glm::mat4 mvp) {
 			glm::vec3 points[8];
@@ -64,19 +46,33 @@ namespace sg {
 			}
 		}
 
+		glm::mat4 BuildRotationMatrix() {
+			return glm::inverse(glm::lookAt(glm::vec3(0), _transform.forward, _transform.up));
+		}
+
+		void BuildModelMatrix() {
+			_modelMatrix = glm::translate(_transform.localPosition)
+				* BuildRotationMatrix()
+				* glm::scale(_transform.localScale);
+		}
+
 	public:
 		bool CastsShadows;
 		bool ReceivesShadows;
 		bool Lit;
 
-		Object3D() : _id(nextId++) {
+		Object3D() : Entity3D() {
 			_modelMatrix = glm::mat4(1);
-			_transform = Transform();
 			_model3D = NULL;
 			_patches = 0;
 			CastsShadows = false;
 			ReceivesShadows = false;
 			Lit = false;
+		}
+
+		glm::mat4 GetModelMatrix() {
+			BuildModelMatrix();
+			return _modelMatrix;
 		}
 
 		bool LoadModelFromObj(const char* path) {
@@ -148,41 +144,6 @@ namespace sg {
 			return _model3D;
 		}
 
-		glm::mat4 GetModelMatrix() {
-			BuildModelMatrix();
-			return _modelMatrix;
-		}
-
-		void Translate(float x, float y, float z) { _transform.Translate(x, y, z); }
-		void Translate(glm::vec3 vec) { _transform.Translate(vec); }
-		void SetLocalPosition(float x, float y, float z) { _transform.localPosition = glm::vec3(x, y, z); }
-		void SetLocalPosition(glm::vec3 pos) { _transform.localPosition = pos; }
-		glm::vec3 GetLocalPosition() { return _transform.localPosition; }
-
-		void Rotate(float x, float y, float z) { _transform.Rotate(x, y, z); }
-		void Rotate(glm::vec3 axis, float angle) { _transform.Rotate(axis, angle); }
-		void RotateAround(glm::vec3 axis, glm::vec3 point, float angle) { _transform.RotateAround(axis, point, angle); }
-		void SetLocalRotation(float x, float y, float z) { _transform.ResetRotation();  _transform.Rotate(x, y, z); }
-		void ResetRotation() { _transform.ResetRotation(); }
-
-		void Scale(float x, float y, float z) { _transform.Scale(x, y, z); }
-		void Scale(glm::vec3 scale) { _transform.Scale(scale); }
-		void SetLocalScale(float x, float y, float z) { _transform.localScale = glm::vec3(x, y, z); }
-		void SetLocalScale(glm::vec3 scale) { _transform.localScale = scale; }
-		void SetLocalUniformScale(float s) { _transform.localScale = glm::vec3(s, s, s); }
-
-		glm::vec3 Forward() { return _transform.forward; }
-		glm::vec3 Up() { return _transform.up; }
-		glm::vec3 Right() { return _transform.right; }
-
-		//void AddChild(Object3D* child) {
-			//_children.push_back(child);
-		//}
-
-		//void RemoveChild(Object3D* child) {
-			//_children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
-		//}
-
 		void Draw(glm::mat4 vp, GLuint program) {
 			BuildModelMatrix();
 			glm::mat4 mvp = vp * _modelMatrix;
@@ -204,10 +165,6 @@ namespace sg {
 					}
 				}
 			}
-
-			//for (int i = 0; i < _children.size(); i++) {
-			//	_children[i]->Draw(mvp, program);
-			//}
 		}
 
 		~Object3D() {
@@ -216,5 +173,4 @@ namespace sg {
 			free(_materials);
 		}
 	};
-	unsigned int Object3D::nextId;
 }
