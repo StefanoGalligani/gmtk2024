@@ -31,6 +31,25 @@ namespace sg {
 		void SetLocalRotation(float x, float y, float z) { _transform.ResetRotation();  _transform.Rotate(x, y, z); }
 		void ResetRotation() { _transform.ResetRotation(); }
 
+		void LookAt(glm::vec3 target, glm::vec3 up) {
+			glm::vec3 targetDir = glm::normalize(target - _transform.localPosition);
+			glm::vec3 rotAxis = glm::normalize(glm::cross(_transform.forward, targetDir));
+			float angle = glm::angle(_transform.forward, targetDir);
+			Rotate(rotAxis, angle);
+
+			glm::vec3 tempAxis = glm::cross(up, _transform.forward);
+			targetDir = glm::normalize(glm::cross(_transform.forward, tempAxis));
+			rotAxis = glm::normalize(glm::cross(_transform.up, targetDir));
+			angle = glm::angle(_transform.up, targetDir);
+			Rotate(rotAxis, angle);
+
+			//TODO: in futuro dovrà prendere la posizione globale, non quella locale
+		}
+
+		void LookAt(glm::vec3 target) {
+			LookAt(target, glm::vec3(0, 1, 0));
+		}
+
 		void Scale(float x, float y, float z) { _transform.Scale(x, y, z); }
 		void Scale(glm::vec3 scale) { _transform.Scale(scale); }
 		void SetLocalScale(float x, float y, float z) { _transform.localScale = glm::vec3(x, y, z); }
@@ -46,7 +65,7 @@ namespace sg {
 		}
 
 		void RemoveChild(Entity3D* child) {
-			_children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
+			_children.remove(child);
 		}
 	};
 	unsigned int Entity3D::nextId;

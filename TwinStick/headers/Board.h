@@ -3,10 +3,11 @@
 class Board {
 private:
 	sg::Object3D* pieceObjs[16];
-    sg::Object3D* boardObj;
     int board[4][4];
 
 public:
+    sg::Object3D* boardObj;
+
     void SwapPieces(int p1x, int p1y, int p2x, int p2y) {
         if (p1x < 0 || p1y < 0 || p2x < 0 || p2y < 0 || p1x >= 4 || p1y >= 4 || p2x >= 4 || p2y >= 4) return;
         sg::Object3D* piece1 = pieceObjs[board[p1x][p1y]];
