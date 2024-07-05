@@ -67,6 +67,9 @@ namespace sg {
 		void RemoveChild(Entity3D* child) {
 			_children.remove(child);
 		}
+
+		void Start() {}
+		void Update(double dt) {}
 	};
 	unsigned int Entity3D::nextId;
 }

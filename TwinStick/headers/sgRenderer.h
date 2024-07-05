@@ -31,6 +31,8 @@ namespace sg {
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
+        bool _firstFrame = true;
+        double _lastDt;
 
     public:
         int InitWindow(const char* title, int width, int height) {
@@ -114,8 +116,35 @@ namespace sg {
             _mainCamera = camera;
         }
 
+        void StartAll() {
+            for (int i = 0; i < _objects.size(); i++) {
+                _objects[i]->Start();
+            }
+            _spotLight->Start();
+            _mainCamera->Start();
+        }
+
+        void UpdateAll(double dt) {
+            for (int i = 0; i < _objects.size(); i++) {
+                _objects[i]->Update(dt);
+            }
+            _spotLight->Update(dt);
+            _mainCamera->Update(dt);
+        }
+
+        void UpdateOrStart() {
+            if (!_firstFrame) {
+                UpdateAll(_lastDt);
+            } else {
+                StartAll();
+                _firstFrame = false;
+            }
+        }
+
         int RenderFrame() {
             double start = sg::getCurrentTimeMillis();
+
+            UpdateOrStart();
 
             sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(_mainCamera->GetView()))), _shadowedProgram, "mvt");
             sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
@@ -168,11 +197,13 @@ namespace sg {
 
             glfwSwapBuffers(_window);
 
-            double elapsed = (sg::getCurrentTimeMillis() - start);
+            double elapsed = (sg::getCurrentTimeMillis() - start) / 1000;
             double sleepTime = glm::max(0.0, (_timestep - elapsed));
             std::this_thread::sleep_for(std::chrono::milliseconds((long)sleepTime));
 
-            return (int)(1000 / (sleepTime + elapsed)); //prima era long, non so se int va bene, testare
+            _lastDt = (sg::getCurrentTimeMillis() - start) / 1000;
+
+            return (int)(1000 / _lastDt); //prima era long, non so se int va bene, testare
         }
 
         void SetupShadows(sg::SpotLight3D* light, int shadowResx, int shadowResy) {

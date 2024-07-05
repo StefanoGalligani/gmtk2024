@@ -9,6 +9,5 @@ namespace sg {
 	public:
 		Camera3D() : View3D() {
 		}
-
 	};
 }

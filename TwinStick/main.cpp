@@ -1,5 +1,6 @@
 #include <sgEngine.h>
 #include <Board.h>
+#include <sstream>
 
 sg::Renderer renderer = sg::Renderer();
 sg::Object3D lightObj = sg::Object3D();
@@ -30,7 +31,7 @@ namespace sg {
 
     private:
         bool initApplication() {
-            if (renderer.InitWindow("Quarto", resx, resy) < 0) return false;
+            if (renderer.InitWindow("TwinStick", resx, resy) < 0) return false;
             renderer.InitPrograms();
             BindInputs();
             InitObjects();
@@ -46,7 +47,11 @@ namespace sg {
             printf("Starting rendering\n");
             while (!glfwWindowShouldClose(renderer.GetWindow()))
             {
-                renderer.RenderFrame();
+                int fps = renderer.RenderFrame();
+                std::stringstream ss{};
+                ss << "TwinStick [" << fps << " FPS]";
+                glfwSetWindowTitle(renderer.GetWindow(), ss.str().c_str());
+
                 glfwPollEvents();
             }
         }
