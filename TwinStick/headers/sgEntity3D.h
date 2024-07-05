@@ -11,12 +11,14 @@ namespace sg {
 
 	protected:
 		Transform _transform;
+		Entity3D* _parent;
 
 	public:
 
 		Entity3D() : _id(nextId++) {
 			_transform = Transform();
 			_children = std::list<Entity3D*>();
+			_parent = NULL;
 		}
 
 		void Translate(float x, float y, float z) { _transform.Translate(x, y, z); }
@@ -61,11 +63,17 @@ namespace sg {
 		glm::vec3 Right() { return _transform.right; }
 
 		void AddChild(Entity3D* child) {
-			_children.push_back(child);
+			if (std::find(_children.begin(), _children.end(), child) == _children.end()) {
+				_children.push_back(child);
+				child->_parent = this;
+			}
 		}
 
 		void RemoveChild(Entity3D* child) {
-			_children.remove(child);
+			if (std::find(_children.begin(), _children.end(), child) != _children.end()) {
+				_children.remove(child);
+				child->_parent = NULL;
+			}
 		}
 
 		void Start() {}
