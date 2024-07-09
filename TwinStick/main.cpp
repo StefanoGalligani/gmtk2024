@@ -45,7 +45,7 @@ namespace sg {
 
         void mainLoop() {
             printf("Starting rendering\n");
-            while (!glfwWindowShouldClose(renderer.GetWindow()))
+            while (!renderer.Terminated())
             {
                 int fps = renderer.RenderFrame();
                 std::stringstream ss{};
@@ -65,15 +65,15 @@ namespace sg {
             printf("Initializing objects\n");
 
             lightObj.LoadModelFromObj("res/light/light.obj");
-            lightObj.SetLocalPosition(0, 30, 60);
+            lightObj.SetGlobalPosition(0, 30, 60);
 
             mainCamera.SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
-            mainCamera.SetLocalPosition(glm::vec3(0, 30, 55));
-            mainCamera.LookAt(glm::vec3(0, 0, 0));
+            mainCamera.SetGlobalPosition(glm::vec3(0, 30, 55));
+            mainCamera.LookAtGlobal(glm::vec3(0, 0, 0));
 
             spotLight.SetPerspective(1.0f, (float)shadowResx / shadowResy, 1.0f, 1000.0f);
-            spotLight.SetLocalPosition(lightObj.GetLocalPosition());
-            spotLight.LookAt(glm::vec3(0, 0, 0));
+            spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
+            spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
 
             renderer.AddObject(&lightObj);
             renderer.SetMainCamera(&mainCamera);
@@ -106,7 +106,7 @@ namespace sg {
         }
 
         static void onEscKeyPressed(int mods) {
-            glfwDestroyWindow(renderer.GetWindow());
+            renderer.DestroyWindow();
         }
 
         static void onSpaceKeyPressed(int mods) {
@@ -144,30 +144,32 @@ namespace sg {
                 if (pressedL) {
                     double movex = (xpos - prevx) / resx;
                     double movey = -(ypos - prevy) / resy;
-                    lightObj.RotateAround(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
-                    lightObj.RotateAround(-lightObj.Right(), glm::vec3(0, 0, 0), movey);
-                    spotLight.SetLocalPosition(lightObj.GetLocalPosition());
-                    spotLight.LookAt(glm::vec3(0, 0, 0));
+                    lightObj.RotateAroundGlobal(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
+                    lightObj.RotateAroundGlobal(-lightObj.GlobalRight(), glm::vec3(0, 0, 0), movey);
+                    spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
+                    spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
                 }
                 if (pressedR) {
                     float movey = (ypos - prevy) / resy;
-                    lightObj.Translate(lightObj.GetLocalPosition() * movey);
-                    spotLight.SetLocalPosition(lightObj.GetLocalPosition());
-                    spotLight.LookAt(glm::vec3(0, 0, 0));
+                    lightObj.TranslateGlobal(lightObj.GetGlobalPosition() * movey);
+                    spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
+                    spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
                 }
             }
             else {
                 if (pressedL) {
                     double movex = -(xpos - prevx) / resx;
+                    mainCamera.RotateAroundGlobal(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
+
                     double movey = (ypos - prevy) / resy;
-                    mainCamera.RotateAround(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
-                    mainCamera.RotateAround(-mainCamera.Right(), glm::vec3(0, 0, 0), movey);
-                    mainCamera.LookAt(glm::vec3(0, 0, 0));
+                    float yForward = mainCamera.GlobalForward().y;
+                    if (glm::abs(yForward) < 0.99 || yForward * movey > 0) {
+                        mainCamera.RotateAroundGlobal(-mainCamera.GlobalRight(), glm::vec3(0, 0, 0), movey);
+                    }
                 }
                 if (pressedR) {
                     float movey = (ypos - prevy) / resy;
-                    mainCamera.Translate(mainCamera.GetLocalPosition() * movey);
-                    mainCamera.LookAt(glm::vec3(0, 0, 0));
+                    mainCamera.TranslateGlobal(mainCamera.GetGlobalPosition() * movey);
                 }
             }
             prevx = xpos;

@@ -74,6 +74,7 @@ namespace sg {
             glPatchParameteri(GL_PATCH_VERTICES, 4);
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_MULTISAMPLE);
+            glEnable(GL_CULL_FACE);
 
             return 0;
         }
@@ -101,6 +102,17 @@ namespace sg {
 
         GLFWwindow* GetWindow() {
             return _window;
+        }
+
+        void DestroyWindow() {
+            if (_window != NULL) {
+                glfwDestroyWindow(_window);
+                _window = NULL;
+            }
+        }
+
+        bool Terminated() {
+            return _window == NULL || glfwWindowShouldClose(_window);
         }
 
         void AddObject(Object3D* obj) {
@@ -149,7 +161,7 @@ namespace sg {
             sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(_mainCamera->GetView()))), _shadowedProgram, "mvt");
             sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
             sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetView())), _shadowedProgram, "matrixVinverse");
-            sg::UpdateLightPos(_spotLight->GetLocalPosition(), _mainCamera->GetView(), _shadowedProgram);
+            sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _shadowedProgram);
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLight->GetShadowBuffer().bufferIndex);
             glClearColor(0, 0, 0, 0);

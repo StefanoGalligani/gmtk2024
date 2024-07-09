@@ -47,13 +47,13 @@ namespace sg {
 		}
 
 		glm::mat4 BuildRotationMatrix() {
-			return glm::inverse(glm::lookAt(glm::vec3(0), _transform.forward, _transform.up));
+			return glm::inverse(glm::lookAt(glm::vec3(0), GlobalForward(), GlobalUp()));
 		}
 
 		void BuildModelMatrix() {
-			_modelMatrix = glm::translate(_transform.localPosition)
+			_modelMatrix = glm::translate(GetGlobalPosition())
 				* BuildRotationMatrix()
-				* glm::scale(_transform.localScale);
+				* glm::scale(_globalTransform.scale);
 		}
 
 	public:

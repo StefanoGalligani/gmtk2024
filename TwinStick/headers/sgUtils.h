@@ -185,7 +185,7 @@ namespace sg {
     }
 
     double getCurrentTimeMillis() {
-        return std::chrono::system_clock::now().time_since_epoch().count();
+        return std::chrono::high_resolution_clock::now().time_since_epoch().count() / 1000.0;
     }
 
     void SetMatrix(glm::mat4 matrix, GLuint program, char const* name) {

@@ -10,7 +10,7 @@ namespace sg {
 		glm::mat4 _viewProjectionMatrix;
 
 		void UpdateView() {
-			_viewMatrix = glm::lookAt(GetLocalPosition(), GetLocalPosition() + Forward(), Up()); //TODO: usare la posizione globale
+			_viewMatrix = glm::lookAt(GetGlobalPosition(), GetGlobalPosition() + GlobalForward(), GlobalUp());
 			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
 		}
 
@@ -35,15 +35,19 @@ namespace sg {
 			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
 		}
 
-		void LookAt(glm::vec3 target, glm::vec3 up) {
-			Entity3D::LookAt(target, up);
-			UpdateView();
-		}
+		//TODO ereditare metodi locali e aggiornare la vista
+		void LookAtLocal(glm::vec3 target, glm::vec3 up) { Entity3D::LookAtLocal(target, up); UpdateView(); }
+		void LookAtLocal(glm::vec3 target) { Entity3D::LookAtLocal(target); UpdateView(); }
 
-		void LookAt(glm::vec3 target) {
-			Entity3D::LookAt(target);
-			UpdateView();
-		}
+		void TranslateGlobal(float x, float y, float z) { Entity3D::TranslateGlobal(x, y, z); UpdateView(); }
+		void TranslateGlobal(glm::vec3 vec) { Entity3D::TranslateGlobal(vec); UpdateView(); }
+		void SetGlobalPosition(float x, float y, float z) { Entity3D::SetGlobalPosition(x, y, z); UpdateView(); }
+		void SetGlobalPosition(glm::vec3 pos) { Entity3D::SetGlobalPosition(pos); UpdateView(); }
+		void RotateGlobal(float x, float y, float z) { Entity3D::RotateGlobal(x, y, z); UpdateView(); }
+		void RotateGlobal(glm::vec3 axis, float angle) { Entity3D::RotateGlobal(axis, angle); UpdateView(); }
+		void RotateAroundGlobal(glm::vec3 axis, glm::vec3 point, float angle) { Entity3D::RotateAroundGlobal(axis, point, angle); UpdateView(); }
+		void LookAtGlobal(glm::vec3 target, glm::vec3 up) { Entity3D::LookAtGlobal(target, up); UpdateView(); }
+		void LookAtGlobal(glm::vec3 target) { Entity3D::LookAtGlobal(target); UpdateView(); }
 
 		glm::mat4 GetViewProjection() {
 			return _viewProjectionMatrix;

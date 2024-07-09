@@ -12,9 +12,9 @@ public:
         if (p1x < 0 || p1y < 0 || p2x < 0 || p2y < 0 || p1x >= 4 || p1y >= 4 || p2x >= 4 || p2y >= 4) return;
         sg::Object3D* piece1 = pieceObjs[board[p1x][p1y]];
         sg::Object3D* piece2 = pieceObjs[board[p2x][p2y]];
-        glm::vec3 pos1 = piece1->GetLocalPosition();
-        piece1->SetLocalPosition(piece2->GetLocalPosition());
-        piece2->SetLocalPosition(pos1);
+        glm::vec3 pos1 = piece1->GetGlobalPosition();
+        piece1->SetGlobalPosition(piece2->GetGlobalPosition());
+        piece2->SetGlobalPosition(pos1);
         int ind1 = board[p1x][p1y];
         board[p1x][p1y] = board[p2x][p2y];
         board[p2x][p2y] = ind1;
@@ -22,7 +22,7 @@ public:
 
     void PositionPieces(int pieces[16]) {
         for (int i = 0; i < 16; i++) {
-            pieceObjs[pieces[i]]->SetLocalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
+            pieceObjs[pieces[i]]->SetGlobalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
             board[i / 4][i % 4] = pieces[i];
         }
     }
@@ -30,15 +30,15 @@ public:
     void Init(sg::Renderer *renderer) {
         boardObj = new sg::Object3D();
         boardObj->LoadModelFromObj("res/models/board.obj");
-        boardObj->SetLocalScale(50, 50, 50);
+        boardObj->SetGlobalScale(50, 50, 50);
         boardObj->CastsShadows = true;
         boardObj->ReceivesShadows = true;
         boardObj->Lit = true;
 
         for (int i = 0; i < 16; i++) {
             pieceObjs[i] = new sg::Object3D();
-            pieceObjs[i]->SetLocalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
-            pieceObjs[i]->SetLocalScale(50, 50, 50);
+            pieceObjs[i]->SetGlobalPosition(-18.75 + 12.5 * (i / 4), 0.01, -18.75 + 12.5 * (i % 4));
+            pieceObjs[i]->SetGlobalScale(50, 50, 50);
             pieceObjs[i]->CastsShadows = true;
             pieceObjs[i]->ReceivesShadows = true;
             pieceObjs[i]->Lit = true;
