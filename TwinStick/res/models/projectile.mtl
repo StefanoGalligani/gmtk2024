@@ -1,0 +1,12 @@
+# Blender MTL File: 'models.blend'
+# Material Count: 1
+
+newmtl ProjectileMat
+Ns 268.178180
+Ka 0.000000 0.000000 0.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.633028 0.633028 0.633028
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2

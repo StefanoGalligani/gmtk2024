@@ -11,11 +11,13 @@ namespace sg {
 		unsigned int _nMaterials;
 		int _patches;
 		glm::mat4 _modelMatrix;
+		bool _copiedModel;
 
 		bool FrustumCheck(glm::mat4 mvp) {
 			glm::vec3 points[8];
-			points[0] = _model3D->GetBoundingBoxLower();
-			points[7] = _model3D->GetBoundingBoxUpper();
+			glm::vec3 offset = glm::vec3(0.05, 0.05, 0.05);
+			points[0] = _model3D->GetBoundingBoxLower() - offset;
+			points[7] = _model3D->GetBoundingBoxUpper() + offset;
 			glm::vec3 lower = glm::vec3(2, 2, 2);
 			glm::vec3 upper = glm::vec3(-2, -2, -2);
 			for (int i = 1; i < 7; i++) {
@@ -60,14 +62,17 @@ namespace sg {
 		bool CastsShadows;
 		bool ReceivesShadows;
 		bool Lit;
+		bool PerformFrustumCheck;
 
 		Object3D() : Entity3D() {
 			_modelMatrix = glm::mat4(1);
 			_model3D = NULL;
 			_patches = 0;
+			_copiedModel = false;
 			CastsShadows = false;
 			ReceivesShadows = false;
 			Lit = false;
+			PerformFrustumCheck = true;
 		}
 
 		glm::mat4 GetModelMatrix() {
@@ -82,7 +87,6 @@ namespace sg {
 				return true;
 			}
 			return false;
-
 		}
 
 		void LoadModelFromData(sg::Vertex vertices[], int nVertices, sg::Triangle triangles[], int nTriangles) {
@@ -100,6 +104,7 @@ namespace sg {
 		void SetModel(sg::Model* model) {
 			_model3D = model;
 			CopyMaterialsFromModel();
+			_copiedModel = true;
 		}
 
 		Material GetMaterialAt(unsigned int index) { return _materials[index]; }
@@ -147,7 +152,7 @@ namespace sg {
 		void Draw(glm::mat4 vp, GLuint program) {
 			BuildModelMatrix();
 			glm::mat4 mvp = vp * _modelMatrix;
-			if (FrustumCheck(mvp)) {
+			if (!PerformFrustumCheck || FrustumCheck(mvp)) {
 				glUseProgram(program);
 				glUniformMatrix4fv(glGetUniformLocation(program, "mvp"), 1, false, glm::value_ptr(mvp));
 
@@ -168,8 +173,10 @@ namespace sg {
 		}
 
 		~Object3D() {
-			if(_model3D) _model3D->Destroy();
-			delete(_model3D);
+			if (!_copiedModel) {
+				if (_model3D) _model3D->Destroy();
+				delete(_model3D);
+			}
 			free(_materials);
 		}
 	};

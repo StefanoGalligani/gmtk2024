@@ -13,7 +13,7 @@ namespace sg {
 		int _shadowHeight;
 
 		void UpdateBias() {
-			_bias = (1.0f / (glm::length2(GetGlobalPosition()) + 1)) * 0.3;
+			_bias = 0.0001f;
 		}
 
 	public:

@@ -1,0 +1,38 @@
+# Blender MTL File: 'models.blend'
+# Material Count: 3
+
+newmtl GunMat
+	Ns 503.158392
+	Ka 1.000000 1.000000 1.000000
+	Kd 1.000000 1.000000 1.000000
+	Ks 0.848624 0.848624 0.848624
+	Ke 0.000000 0.000000 0.000000
+	Ni 1.450000
+	d 1.000000
+	illum 2
+	map_Kd GunTexture.png
+	map_Ka GunTexture.png
+
+newmtl PlayerMat
+	Ns 0.000000
+	Ka 1.000000 1.000000 1.000000
+	Kd 1.000000 1.000000 1.000000
+	Ks 0.050000 0.050000 0.050000
+	Ke 0.000000 0.000000 0.000000
+	Ni 1.450000
+	d 1.000000
+	illum 2
+	map_Kd PlayerTexture.png
+	map_Ka PlayerTexture.png
+
+newmtl TorchlightMat
+	Ns 225.000000
+	Ka 1.000000 1.000000 1.000000
+	Kd 1.000000 1.000000 1.000000
+	Ks 0.500000 0.500000 0.500000
+	Ke 0.000000 0.000000 0.000000
+	Ni 1.450000
+	d 1.000000
+	illum 2
+	map_Kd TorchlightTexture.png
+	map_Ka TorchlightTexture.png

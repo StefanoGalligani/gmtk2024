@@ -50,9 +50,6 @@
     <ClInclude Include="headers\sgTextureManager.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="headers\Board.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="headers\sgSkyboxRenderer.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>

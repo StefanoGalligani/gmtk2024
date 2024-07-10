@@ -1,0 +1,14 @@
+# Blender MTL File: 'map.blend'
+# Material Count: 1
+
+newmtl Silo
+Ns 16.061125
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.118321 0.118321 0.118321
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd SiloTexture.png
+map_Ka SiloTexture.png

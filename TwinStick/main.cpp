@@ -1,12 +1,17 @@
 #include <sgEngine.h>
-#include <Board.h>
 #include <sstream>
 
 sg::Renderer renderer = sg::Renderer();
 sg::Object3D lightObj = sg::Object3D();
 sg::Camera3D mainCamera = sg::Camera3D();
 sg::SpotLight3D spotLight = sg::SpotLight3D();
-Board board = Board();
+sg::Object3D playerObj = sg::Object3D();
+sg::Object3D zombieObj = sg::Object3D();
+sg::Object3D mapObj = sg::Object3D();
+sg::Object3D shedObj = sg::Object3D();
+sg::Object3D siloObj = sg::Object3D();
+sg::Object3D siloObj2 = sg::Object3D();
+sg::Object3D treeObj = sg::Object3D();
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -36,7 +41,7 @@ namespace sg {
             BindInputs();
             InitObjects();
 
-            renderer.SetAmbientLight(0.5f);
+            renderer.SetAmbientLight(0.3f);
             renderer.SetupShadows(&spotLight, shadowResx, shadowResy);
             renderer.SetSkybox("res/skybox/posx.png", "res/skybox/negx.png", "res/skybox/posy.png",
                 "res/skybox/negy.png", "res/skybox/posz.png", "res/skybox/negz.png");
@@ -64,22 +69,61 @@ namespace sg {
         void InitObjects() {
             printf("Initializing objects\n");
 
-            lightObj.LoadModelFromObj("res/light/light.obj");
-            lightObj.SetGlobalPosition(0, 30, 60);
+            playerObj.LoadModelFromObj("res/models/player.obj");
+            playerObj.Lit = true;
+            playerObj.CastsShadows = true;
+            playerObj.ReceivesShadows = true;
+            playerObj.PerformFrustumCheck = false;
+            playerObj.SetGlobalPosition(0, 0, -1.5);
+
+            zombieObj.LoadModelFromObj("res/models/zombie.obj");
+            zombieObj.Lit = true;
+            zombieObj.CastsShadows = true;
+            zombieObj.ReceivesShadows = true;
+            zombieObj.SetGlobalPosition(0, 0, 1.5);
+            zombieObj.RotateGlobal(glm::vec3(0,1,0), 3.1415926535f);
+
+            mapObj.LoadModelFromObj("res/models/map.obj");
+            mapObj.Lit = true;
+            mapObj.ReceivesShadows = true;
+            mapObj.PerformFrustumCheck = false;
+            shedObj.LoadModelFromObj("res/models/shed.obj");
+            shedObj.Lit = true;
+            shedObj.CastsShadows = true;
+            shedObj.ReceivesShadows = true;
+            siloObj.LoadModelFromObj("res/models/silo.obj");
+            siloObj.Lit = true;
+            siloObj.CastsShadows = true;
+            siloObj.ReceivesShadows = true;
+            siloObj2.SetModel(siloObj.GetModel());
+            siloObj2.Lit = true;
+            siloObj2.CastsShadows = true;
+            siloObj2.ReceivesShadows = true;
+            siloObj2.SetGlobalPosition(0, 0, 15);
+            treeObj.LoadModelFromObj("res/models/tree.obj");
+            treeObj.Lit = true;
+            treeObj.CastsShadows = true;
+            treeObj.ReceivesShadows = true;
+
+            lightObj.SetGlobalPosition(0, 5, 8);
 
             mainCamera.SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
-            mainCamera.SetGlobalPosition(glm::vec3(0, 30, 55));
+            mainCamera.SetGlobalPosition(glm::vec3(0, 5, 7));
             mainCamera.LookAtGlobal(glm::vec3(0, 0, 0));
 
             spotLight.SetPerspective(1.0f, (float)shadowResx / shadowResy, 1.0f, 1000.0f);
             spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
             spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
 
-            renderer.AddObject(&lightObj);
+            renderer.AddObject(&playerObj);
+            renderer.AddObject(&zombieObj);
+            renderer.AddObject(&mapObj);
+            renderer.AddObject(&shedObj);
+            renderer.AddObject(&siloObj);
+            renderer.AddObject(&siloObj2);
+            renderer.AddObject(&treeObj);
             renderer.SetMainCamera(&mainCamera);
             renderer.SetSpotLight(&spotLight);
-
-            board.Init(&renderer);
 
             printf("Buffers ready\n");
         }

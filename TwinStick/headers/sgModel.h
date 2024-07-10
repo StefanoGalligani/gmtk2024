@@ -219,11 +219,13 @@ namespace sg {
 		int meshCount = 0;
 		Mesh* currentMesh = NULL;
 
+		bool needToCreateMesh = true;
 		while (int rb = buffer.ReadLine(fp)) {
 			if (buffer.IsCommand("mtllib")) {
 				const char* mtlFilename = buffer.Data(7);
 				ReadMaterial(folder, mtlFilename);
-			} else if (buffer.IsCommand("g") || buffer.IsCommand("o")) {
+				needToCreateMesh = true;
+			} else if (buffer.IsCommand("g") || buffer.IsCommand("o") || (buffer.IsCommand("usemtl") && needToCreateMesh)) {
 				printf("Reading new object: ");
 				if (currentMesh != NULL) {
 					currentMesh -> triangles = new Triangle[currentTriangles.size()];
@@ -240,10 +242,16 @@ namespace sg {
 				currentMesh = new Mesh();
 				buffer.DeepCopy(&(currentMesh->name), 2);
 				printf("%s\n", currentMesh->name);
+				needToCreateMesh = false;
+				if (buffer.IsCommand("usemtl")) {
+					currentMesh->hasMaterial = true;
+					buffer.DeepCopy(&(currentMesh->materialName), 7);
+					needToCreateMesh = true;
+				}
 			} else if (buffer.IsCommand("usemtl")) {
-				char* matName;
 				currentMesh->hasMaterial = true;
 				buffer.DeepCopy(&(currentMesh->materialName), 7);
+				needToCreateMesh = true;
 			} else if (buffer.IsCommand("v")) {
 				float coord[3];
 				buffer.ReadFloat3(coord);
@@ -279,7 +287,7 @@ namespace sg {
 					i++;
 				}
 				unsigned int faceIndices[4];
-				for (i = 0; i < vIndex; i++) {
+				for (i = 0; i < glm::min(vIndex, 4); i++) {
 					std::string str = triples[i];
 					if (map[str]) {
 						faceIndices[i] = map[str];
@@ -321,7 +329,7 @@ namespace sg {
 					Triangle t = Triangle();
 					t.index[0] = faceIndices[0]; t.index[1] = faceIndices[1]; t.index[2] = faceIndices[2];
 					currentTriangles.push_back(t);
-				} else {
+				} else if (vIndex == 4) {
 					Triangle t1 = Triangle();
 					Triangle t2 = Triangle();
 					t1.index[0] = faceIndices[0]; t1.index[1] = faceIndices[1]; t1.index[2] = faceIndices[2];
