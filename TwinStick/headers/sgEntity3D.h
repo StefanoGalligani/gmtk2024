@@ -32,13 +32,13 @@ namespace sg {
 			glm::mat3 matrix = glm::mat3();
 			matrix[0][0] = _parent->_globalTransform.right.x;
 			matrix[1][0] = _parent->_globalTransform.right.y;
-			matrix[2][0] = _parent->_globalTransform.right.z;
+			matrix[2][0] = -_parent->_globalTransform.right.z;
 			matrix[0][1] = _parent->_globalTransform.up.x;
 			matrix[1][1] = _parent->_globalTransform.up.y;
-			matrix[2][1] = _parent->_globalTransform.up.z;
-			matrix[0][2] = _parent->_globalTransform.forward.x;
-			matrix[1][2] = _parent->_globalTransform.forward.y;
-			matrix[2][2] = _parent->_globalTransform.forward.z;
+			matrix[2][1] = -_parent->_globalTransform.up.z;
+			matrix[0][2] = -_parent->_globalTransform.forward.x;
+			matrix[1][2] = -_parent->_globalTransform.forward.y;
+			matrix[2][2] = -_parent->_globalTransform.forward.z;
 			return matrix;
 		}
 
@@ -46,13 +46,13 @@ namespace sg {
 			glm::mat3 matrix = glm::mat3();
 			matrix[0][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().x;
 			matrix[1][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().y;
-			matrix[2][0] = _parent->_globalTransform.scale.x * -_parent->GlobalRight().z;
+			matrix[2][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().z;
 			matrix[0][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().x;
 			matrix[1][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().y;
-			matrix[2][1] = _parent->_globalTransform.scale.y * -_parent->GlobalUp().z;
+			matrix[2][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().z;
 			matrix[0][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().x;
 			matrix[1][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().y;
-			matrix[2][2] = _parent->_globalTransform.scale.z * -_parent->GlobalForward().z;
+			matrix[2][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().z;
 			return matrix;
 		}
 
@@ -115,9 +115,18 @@ namespace sg {
 			if (_parent == NULL) {
 				_globalTransform.scale = _localTransform.scale;
 			} else {
-				_globalTransform.scale.x = _localTransform.scale.x * glm::dot(_parent->_globalTransform.scale, glm::abs(LocalRight()));
-				_globalTransform.scale.y = _localTransform.scale.y * glm::dot(_parent->_globalTransform.scale, glm::abs(LocalUp()));
-				_globalTransform.scale.z = _localTransform.scale.z * glm::dot(_parent->_globalTransform.scale, glm::abs(LocalForward()));
+				_globalTransform.scale.x = _localTransform.scale.x *
+					(1 + abs(LocalRight().x) * (_parent->GetGlobalScale().x - 1)) *
+					(1 + abs(LocalRight().y) * (_parent->GetGlobalScale().y - 1)) *
+					(1 + abs(LocalRight().z) * (_parent->GetGlobalScale().z - 1));
+				_globalTransform.scale.y = _localTransform.scale.y *
+					(1 + abs(LocalUp().x) * (_parent->GetGlobalScale().x - 1)) *
+					(1 + abs(LocalUp().y) * (_parent->GetGlobalScale().y - 1)) *
+					(1 + abs(LocalUp().z) * (_parent->GetGlobalScale().z - 1));
+				_globalTransform.scale.z = _localTransform.scale.z *
+					(1 + abs(LocalForward().x) * (_parent->GetGlobalScale().x - 1)) *
+					(1 + abs(LocalForward().y) * (_parent->GetGlobalScale().y - 1)) *
+					(1 + abs(LocalForward().z) * (_parent->GetGlobalScale().z - 1));
 			}
 
 			if (updateChildren) UpdateGlobalTransformInChildren();
@@ -155,7 +164,7 @@ namespace sg {
 		virtual void TranslateLocal(glm::vec3 vec) { _localTransform.Translate(vec); GlobalPositionFromLocal(); }
 		virtual void SetLocalPosition(float x, float y, float z) { _localTransform.position = glm::vec3(x, y, z); GlobalPositionFromLocal(); }
 		virtual void SetLocalPosition(glm::vec3 pos) { _localTransform.position = pos; GlobalPositionFromLocal(); }
-		virtual glm::vec3 GetLocalPosition() { return _localTransform.position; }
+		glm::vec3 GetLocalPosition() { return _localTransform.position; }
 
 		virtual void RotateLocal(float x, float y, float z) { _localTransform.Rotate(x, y, z); GlobalRotationFromLocal(); }
 		virtual void RotateLocal(glm::vec3 axis, float angle) { _localTransform.Rotate(axis, angle); GlobalRotationFromLocal(); }
@@ -175,6 +184,7 @@ namespace sg {
 		virtual void SetLocalScale(float x, float y, float z) { _localTransform.scale = glm::vec3(x, y, z); GlobalScaleFromLocal(); }
 		virtual void SetLocalScale(glm::vec3 scale) { _localTransform.scale = scale; GlobalScaleFromLocal(); }
 		virtual void SetLocalUniformScale(float s) { _localTransform.scale = glm::vec3(s, s, s); GlobalScaleFromLocal(); }
+		glm::vec3 GetLocalScale() { return _localTransform.scale; }
 
 		glm::vec3 LocalForward() { return _localTransform.forward; }
 		glm::vec3 LocalUp() { return _localTransform.up; }
@@ -208,6 +218,7 @@ namespace sg {
 		virtual void SetGlobalScale(float x, float y, float z) { _globalTransform.scale = glm::vec3(x, y, z); LocalScaleFromGlobal(); }
 		virtual void SetGlobalScale(glm::vec3 scale) { _globalTransform.scale = scale; LocalScaleFromGlobal(); }
 		virtual void SetGlobalUniformScale(float s) { _globalTransform.scale = glm::vec3(s, s, s); LocalScaleFromGlobal(); }
+		glm::vec3 GetGlobalScale() { return _globalTransform.scale; }
 
 		glm::vec3 GlobalForward() { return _globalTransform.forward; }
 		glm::vec3 GlobalUp() { return _globalTransform.up; }
@@ -239,8 +250,8 @@ namespace sg {
 			}
 		}
 
-		void Start() {}
-		void Update(double dt) {}
+		virtual void Start() {}
+		virtual void Update(double dt) {}
 	};
 	unsigned int Entity3D::nextId;
 }

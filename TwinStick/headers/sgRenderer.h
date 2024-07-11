@@ -28,6 +28,7 @@ namespace sg {
         Camera3D* _mainCamera;
         SpotLight3D* _spotLight;
         std::vector<Object3D*> _objects;
+        std::vector<Entity3D*> _entities;
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
@@ -115,6 +116,10 @@ namespace sg {
             return _window == NULL || glfwWindowShouldClose(_window);
         }
 
+        void AddEntity(Entity3D* entity) {
+            _entities.push_back(entity);
+        }
+
         void AddObject(Object3D* obj) {
             obj->GetModel()->SetVBO(_vao);
             _objects.push_back(obj);
@@ -129,6 +134,9 @@ namespace sg {
         }
 
         void StartAll() {
+            for (int i = 0; i < _entities.size(); i++) {
+                _entities[i]->Start();
+            }
             for (int i = 0; i < _objects.size(); i++) {
                 _objects[i]->Start();
             }
@@ -137,6 +145,10 @@ namespace sg {
         }
 
         void UpdateAll(double dt) {
+            dt /= 1000;
+            for (int i = 0; i < _entities.size(); i++) {
+                _entities[i]->Update(dt);
+            }
             for (int i = 0; i < _objects.size(); i++) {
                 _objects[i]->Update(dt);
             }

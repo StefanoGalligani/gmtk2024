@@ -7,16 +7,20 @@ private:
 	sg::Object3D* _playerObj;
 	sg::SpotLight3D* _spotLight;
 	sg::Camera3D* _mainCamera;
+	glm::vec3 _rawVelocity = glm::vec3(0);
+	glm::vec3 _velocity = glm::vec3(0);
+	float _speed;
 
 public:
-	Player(sg::Renderer* renderer, int shadowResx, int shadowResy, int resx, int resy) {
+	Player(sg::Renderer* renderer, float speed, int shadowResx, int shadowResy, int resx, int resy) {
+		_speed = speed;
+
 		_playerObj = new sg::Object3D();
 		_playerObj->LoadModelFromObj("res/models/player.obj");
 		_playerObj->Lit = true;
 		_playerObj->CastsShadows = true;
 		_playerObj->ReceivesShadows = true;
 		_playerObj->PerformFrustumCheck = false;
-		_playerObj->RotateLocal(_playerObj->LocalUp(), 3.1415926535f);
 
 		_spotLight = new sg::SpotLight3D();
 		_spotLight->SetPerspective(1.0f, (float)shadowResx / shadowResy, 0.01f, 100.0f);
@@ -35,8 +39,27 @@ public:
 		renderer->AddObject(_playerObj);
 		renderer->SetMainCamera(_mainCamera);
 		renderer->SetSpotLight(_spotLight);
+		renderer->AddEntity(this);
 
-		_playerObj->RotateGlobal(glm::vec3(0, 1, 0), 3.1415926535f);
+	}
+
+	void AddVelocityX(float x) {
+		_rawVelocity.x += x;
+		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
+	}
+
+	void AddVelocityZ(float z) {
+		_rawVelocity.z += z;
+		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
+	}
+
+	void SetNewDirection(int x, int z) {
+		_playerObj->LookAtLocal(glm::normalize(glm::vec3(x, 0, z)));
+	}
+
+	void Update(double dt) override {
+		sg::Entity3D::Update(dt);
+		TranslateGlobal((float)dt * _velocity * _speed);
 	}
 
 	void UpdateCameraResolution(int resx, int resy) {

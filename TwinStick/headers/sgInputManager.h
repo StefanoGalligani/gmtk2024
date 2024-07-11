@@ -15,6 +15,14 @@ namespace sg {
 	constexpr auto Key_Ctrl_Up = 103;
 	constexpr auto Key_Space_Down = 104;
 	constexpr auto Key_Space_Up = 105;
+	constexpr auto Key_W_Down = 110;
+	constexpr auto Key_W_Up = 111;
+	constexpr auto Key_A_Down = 112;
+	constexpr auto Key_A_Up = 113;
+	constexpr auto Key_S_Down = 114;
+	constexpr auto Key_S_Up = 115;
+	constexpr auto Key_D_Down = 116;
+	constexpr auto Key_D_Up = 117;
 	constexpr auto Window_Resize = 200;
 
 	typedef void (*sgCursorPosFun)(double xpos, double ypos);
@@ -81,90 +89,82 @@ namespace sg {
 		void BindInput(GLFWwindow* window, InputCommand cmd, sgKeyOrMouseFun callback) {
 			KeyOrMouseFunction f = KeyOrMouseFunction();
 			f.window = window;
+			bool isMouse = false;
 			switch (cmd) {
 			case Mouse_Left_Down:
 				f.key = GLFW_MOUSE_BUTTON_LEFT; f.action = 1;
-				_mouseButtonFunctions[f] = callback;
-				if (!_mouseButtonCallbackSet[window]) {
-					glfwSetMouseButtonCallback(window, MouseButtonCallback);
-					_mouseButtonCallbackSet[window] = true;
-				}
+				isMouse = true;
 				break;
 			case Mouse_Left_Up:
 				f.key = GLFW_MOUSE_BUTTON_LEFT; f.action = 0;
-				_mouseButtonFunctions[f] = callback;
-				if (!_mouseButtonCallbackSet[window]) {
-					glfwSetMouseButtonCallback(window, MouseButtonCallback);
-					_mouseButtonCallbackSet[window] = true;
-				}
+				isMouse = true;
 				break;
 			case Mouse_Right_Down:
 				f.key = GLFW_MOUSE_BUTTON_RIGHT; f.action = 1;
-				_mouseButtonFunctions[f] = callback;
-				if (!_mouseButtonCallbackSet[window]) {
-					glfwSetMouseButtonCallback(window, MouseButtonCallback);
-					_mouseButtonCallbackSet[window] = true;
-				}
+				isMouse = true;
 				break;
 			case Mouse_Right_Up:
 				f.key = GLFW_MOUSE_BUTTON_RIGHT; f.action = 0;
+				isMouse = true;
+				break;
+			case Key_Esc_Down:
+				f.key = GLFW_KEY_ESCAPE; f.action = 1;
+				break;
+			case Key_Esc_Up:
+				f.key = GLFW_KEY_ESCAPE; f.action = 0;
+				break;
+			case Key_Ctrl_Down:
+				f.key = GLFW_KEY_LEFT_CONTROL; f.action = 1;
+				break;
+			case Key_Ctrl_Up:
+				f.key = GLFW_KEY_LEFT_CONTROL; f.action = 0;
+				break;
+			case Key_Space_Down:
+				f.key = GLFW_KEY_SPACE; f.action = 1;
+				break;
+			case Key_Space_Up:
+				f.key = GLFW_KEY_SPACE; f.action = 0;
+				break;
+			case Key_W_Down:
+				f.key = GLFW_KEY_W; f.action = 1;
+				break;
+			case Key_W_Up:
+				f.key = GLFW_KEY_W; f.action = 0;
+				break;
+			case Key_A_Down:
+				f.key = GLFW_KEY_A; f.action = 1;
+				break;
+			case Key_A_Up:
+				f.key = GLFW_KEY_A; f.action = 0;
+				break;
+			case Key_S_Down:
+				f.key = GLFW_KEY_S; f.action = 1;
+				break;
+			case Key_S_Up:
+				f.key = GLFW_KEY_S; f.action = 0;
+				break;
+			case Key_D_Down:
+				f.key = GLFW_KEY_D; f.action = 1;
+				break;
+			case Key_D_Up:
+				f.key = GLFW_KEY_D; f.action = 0;
+				break;
+			default:
+				BindingError();
+				return;
+			}
+			if (isMouse) {
 				_mouseButtonFunctions[f] = callback;
 				if (!_mouseButtonCallbackSet[window]) {
 					glfwSetMouseButtonCallback(window, MouseButtonCallback);
 					_mouseButtonCallbackSet[window] = true;
 				}
-				break;
-			case Key_Esc_Down:
-				f.key = GLFW_KEY_ESCAPE; f.action = 1;
+			} else {
 				_keyFunctions[f] = callback;
 				if (!_keyCallbackSet[window]) {
 					glfwSetKeyCallback(window, KeyCallback);
 					_keyCallbackSet[window] = true;
 				}
-				break;
-			case Key_Esc_Up:
-				f.key = GLFW_KEY_ESCAPE; f.action = 0;
-				_keyFunctions[f] = callback;
-				if (!_keyCallbackSet[window]) {
-					glfwSetKeyCallback(window, KeyCallback);
-					_keyCallbackSet[window] = true;
-				}
-				break;
-			case Key_Ctrl_Down:
-				f.key = GLFW_KEY_LEFT_CONTROL; f.action = 1;
-				_keyFunctions[f] = callback;
-				if (!_keyCallbackSet[window]) {
-					glfwSetKeyCallback(window, KeyCallback);
-					_keyCallbackSet[window] = true;
-				}
-				break;
-			case Key_Ctrl_Up:
-				f.key = GLFW_KEY_LEFT_CONTROL; f.action = 0;
-				_keyFunctions[f] = callback;
-				if (!_keyCallbackSet[window]) {
-					glfwSetKeyCallback(window, KeyCallback);
-					_keyCallbackSet[window] = true;
-				}
-				break;
-			case Key_Space_Down:
-				f.key = GLFW_KEY_SPACE; f.action = 1;
-				_keyFunctions[f] = callback;
-				if (!_keyCallbackSet[window]) {
-					glfwSetKeyCallback(window, KeyCallback);
-					_keyCallbackSet[window] = true;
-				}
-				break;
-			case Key_Space_Up:
-				f.key = GLFW_KEY_SPACE; f.action = 0;
-				_keyFunctions[f] = callback;
-				if (!_keyCallbackSet[window]) {
-					glfwSetKeyCallback(window, KeyCallback);
-					_keyCallbackSet[window] = true;
-				}
-				break;
-			default:
-				BindingError();
-				break;
 			}
 		}
 

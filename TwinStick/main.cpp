@@ -23,6 +23,8 @@ float resy = 720;
 float shadowResx = 2048;
 float shadowResy = 2048;
 
+#define PLAYER_SPEED 10
+
 class sgGame {
 public:
     void run() {
@@ -64,7 +66,7 @@ private:
     void InitObjects() {
         printf("Initializing objects\n");
 
-        player = new Player(&renderer, shadowResx, shadowResy, resx, resy);
+        player = new Player(&renderer, PLAYER_SPEED, shadowResx, shadowResy, resx, resy);
 
         zombieObj.LoadModelFromObj("res/models/zombie.obj");
         zombieObj.Lit = true;
@@ -105,6 +107,7 @@ private:
         printf("Buffers ready\n");
     }
 
+#pragma region input
     void BindInputs() {
         BindInput(sg::Key_Esc_Down, onEscKeyPressed);
         BindInput(sg::Key_Space_Down, onSpaceKeyPressed);
@@ -114,6 +117,15 @@ private:
         BindInput(sg::Mouse_Right_Up, onRightMouseButtonRelease);
         BindInput(sg::Mouse_Position, onMouseDrag);
         BindInput(sg::Window_Resize, onWindowResize);
+
+        BindInput(sg::Key_W_Down, onWPressed);
+        BindInput(sg::Key_W_Up, onWReleased);
+        BindInput(sg::Key_S_Down, onSPressed);
+        BindInput(sg::Key_S_Up, onSReleased);
+        BindInput(sg::Key_A_Down, onAPressed);
+        BindInput(sg::Key_A_Up, onAReleased);
+        BindInput(sg::Key_D_Down, onDPressed);
+        BindInput(sg::Key_D_Up, onDReleased);
     }
 
     void BindInput(int cmd, sg::sgKeyOrMouseFun callback) {
@@ -160,6 +172,38 @@ private:
         pressedR = false;
     }
 
+    static void onWPressed(int mods) {
+        player->AddVelocityZ(-1);
+    }
+
+    static void onWReleased(int mods) {
+        player->AddVelocityZ(1);
+    }
+
+    static void onSPressed(int mods) {
+        player->AddVelocityZ(1);
+    }
+
+    static void onSReleased(int mods) {
+        player->AddVelocityZ(-1);
+    }
+
+    static void onAPressed(int mods) {
+        player->AddVelocityX(-1);
+    }
+
+    static void onAReleased(int mods) {
+        player->AddVelocityX(1);
+    }
+
+    static void onDPressed(int mods) {
+        player->AddVelocityX(1);
+    }
+
+    static void onDReleased(int mods) {
+        player->AddVelocityX(-1);
+    }
+
     static void onMouseDrag(double xpos, double ypos) {
         /*if (pressedCTRL) {
             if (pressedL) {
@@ -196,7 +240,9 @@ private:
         prevx = xpos;
         prevy = ypos;
         */
+        player->SetNewDirection(xpos - resx/2, ypos - resy/2);
     }
+#pragma endregion
 };
 
 int main(int argc, char* argv[]) {
