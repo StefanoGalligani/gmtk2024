@@ -136,6 +136,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\Player.h" />
     <ClInclude Include="headers\sgEngine.h" />
     <ClInclude Include="headers\sgEntity3D.h" />
     <ClInclude Include="headers\sgInputManager.h" />

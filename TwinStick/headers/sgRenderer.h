@@ -176,7 +176,7 @@ namespace sg {
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _origFB);
             glViewport(0, 0, _width, _height);
-            glClear(/*GL_COLOR_BUFFER_BIT | */ GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
 
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {
@@ -215,13 +215,13 @@ namespace sg {
 
             _lastDt = (sg::getCurrentTimeMillis() - start) / 1000;
 
-            return (int)(1000 / _lastDt); //prima era long, non so se int va bene, testare
+            return (int)(1000 / _lastDt);
         }
 
         void SetupShadows(sg::SpotLight3D* light, int shadowResx, int shadowResy) {
-            light->SetupShadows(shadowResx, shadowResy, 3); //il 3 è arbitrario, poi andrà fatto gestire al TextureManager
+            light->SetupShadows(shadowResx, shadowResy, 5); //il 5 è arbitrario, poi andrà fatto gestire al TextureManager
             glUseProgram(_shadowedProgram);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), 3);
+            glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), 5);
         }
 
         void SetSkybox(const char* posx, const char* negx, const char* posy, const char* negy, const char* posz, const char* negz) {
