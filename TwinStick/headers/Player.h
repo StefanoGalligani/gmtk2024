@@ -60,10 +60,15 @@ public:
 	void Update(double dt) override {
 		sg::Entity3D::Update(dt);
 		TranslateGlobal((float)dt * _velocity * _speed);
+		_globalTransform.position = glm::clamp(GetGlobalPosition(), glm::vec3(-26, 0, -17), glm::vec3(26, 0, 35));
 	}
 
 	void UpdateCameraResolution(int resx, int resy) {
 		_mainCamera->SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
+	}
+
+	glm::vec3 GetDirection() {
+		return _playerObj->GlobalForward();
 	}
 
 	~Player() {

@@ -8,11 +8,11 @@ namespace sg {
 		Transform _localTransform;
 		Transform _globalTransform;
 		Entity3D* _parent;
+		std::list<Entity3D*> _children;
 
 	private:
 		static unsigned int nextId;
 		int _id;
-		std::list<Entity3D*> _children;
 
 		void LocalTransformFromGlobal() {
 			LocalRotationFromGlobal(false);
@@ -152,9 +152,6 @@ namespace sg {
 	public:
 
 		Entity3D() : _id(nextId++) {
-			_localTransform = Transform();
-			_globalTransform = Transform();
-			_children = std::list<Entity3D*>();
 			_parent = NULL;
 		}
 

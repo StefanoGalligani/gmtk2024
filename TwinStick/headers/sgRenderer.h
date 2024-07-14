@@ -124,6 +124,19 @@ namespace sg {
             obj->GetModel()->SetVBO(_vao);
             _objects.push_back(obj);
         }
+
+        void RemoveObject(Object3D *obj) {
+            int index = -1;
+            for (int i = 0; i < _objects.size(); i++) {
+                if (_objects[i] == obj) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _objects.erase(std::next(_objects.begin(), index));
+            }
+        }
         
         void SetSpotLight(SpotLight3D* light) {
             _spotLight = light;

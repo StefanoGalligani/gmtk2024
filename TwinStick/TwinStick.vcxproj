@@ -136,6 +136,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\Bullet.h" />
+    <ClInclude Include="headers\EnemyManager.h" />
     <ClInclude Include="headers\Player.h" />
     <ClInclude Include="headers\sgEngine.h" />
     <ClInclude Include="headers\sgEntity3D.h" />

@@ -1,10 +1,13 @@
 #include <sgEngine.h>
 #include <sstream>
 #include <Player.h>
+#include <EnemyManager.h>
+#include <Bullet.h>
 
 sg::Renderer renderer = sg::Renderer();
 Player* player;
-sg::Object3D zombieObj = sg::Object3D();
+EnemyManager* enemyManager;
+sg::Model* bulletModel;
 sg::Object3D mapObj = sg::Object3D();
 sg::Object3D shedObj = sg::Object3D();
 sg::Object3D siloObj = sg::Object3D();
@@ -24,6 +27,9 @@ float shadowResx = 2048;
 float shadowResy = 2048;
 
 #define PLAYER_SPEED 10
+#define ENEMY_SPEED 4
+#define BULLET_SPEED 30
+#define BULLET_LIFETIME 1
 
 class sgGame {
 public:
@@ -59,21 +65,18 @@ private:
 
     void cleanup() {
         delete(player);
+        delete(enemyManager);
+        delete(bulletModel);
         printf("Terminating");
         glfwTerminate();
     }
 
     void InitObjects() {
         printf("Initializing objects\n");
-
         player = new Player(&renderer, PLAYER_SPEED, shadowResx, shadowResy, resx, resy);
-
-        zombieObj.LoadModelFromObj("res/models/zombie.obj");
-        zombieObj.Lit = true;
-        zombieObj.CastsShadows = true;
-        zombieObj.ReceivesShadows = true;
-        zombieObj.SetGlobalPosition(0, 0, 5);
-        zombieObj.RotateGlobal(glm::vec3(0,1,0), 3.1415926535f);
+        enemyManager = new EnemyManager(&renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
+        bulletModel = new sg::Model();
+        bulletModel->LoadFromObj("res/models/projectile.obj");
 
         mapObj.LoadModelFromObj("res/models/map.obj");
         mapObj.Lit = true;
@@ -96,8 +99,8 @@ private:
         treeObj.Lit = true;
         treeObj.CastsShadows = true;
         treeObj.ReceivesShadows = true;
-
-        renderer.AddObject(&zombieObj);
+        treeObj.SetGlobalPosition(-10, 0, 10);
+        
         renderer.AddObject(&mapObj);
         renderer.AddObject(&shedObj);
         renderer.AddObject(&siloObj);
@@ -157,6 +160,17 @@ private:
     static void onLeftMouseButtonClick(int mods) {
         pressedL = true;
         pressedCTRL = (mods & GLFW_MOD_CONTROL) > 0;
+
+        Bullet* bullet = new Bullet(
+            player->GetGlobalPosition() + player->GetDirection() * 1.4f,
+            player->GetDirection(),
+            BULLET_SPEED,
+            BULLET_LIFETIME,
+            enemyManager,
+            &renderer,
+            bulletModel
+        );
+        renderer.AddObject(bullet);
     }
 
     static void onLeftMouseButtonRelease(int mods) {
