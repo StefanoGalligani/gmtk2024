@@ -9,6 +9,7 @@ private:
 	sg::Camera3D* _mainCamera;
 	glm::vec3 _rawVelocity = glm::vec3(0);
 	glm::vec3 _velocity = glm::vec3(0);
+	bool _pressedKeys[4];
 	float _speed;
 
 public:
@@ -29,7 +30,7 @@ public:
 
 		_mainCamera = new sg::Camera3D();
 		_mainCamera->SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
-		_mainCamera->SetGlobalPosition(glm::vec3(0, 8, 5));
+		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 6));
 		_mainCamera->LookAtGlobal(glm::vec3(0, 0, 0));
 
 		AddChild(_playerObj, false);
@@ -43,13 +44,17 @@ public:
 
 	}
 
-	void AddVelocityX(float x) {
-		_rawVelocity.x += x;
+	void SetHoriz(int dir, bool pressed) {
+		if (dir == -1) _pressedKeys[0] = pressed;
+		if (dir == 1) _pressedKeys[1] = pressed;
+		_rawVelocity.x = (_pressedKeys[0] ? -1: 0) + (_pressedKeys[1] ? 1 : 0);
 		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
 	}
 
-	void AddVelocityZ(float z) {
-		_rawVelocity.z += z;
+	void SetVert(int dir, bool pressed) {
+		if (dir == -1) _pressedKeys[2] = pressed;
+		if (dir == 1) _pressedKeys[3] = pressed;
+		_rawVelocity.z = (_pressedKeys[2] ? -1 : 0) + (_pressedKeys[3] ? 1 : 0);
 		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
 	}
 

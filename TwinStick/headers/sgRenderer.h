@@ -36,35 +36,15 @@ namespace sg {
         double _lastDt;
 
     public:
-        int InitWindow(const char* title, int width, int height) {
-            /* Initialize the library */
-            if (!glfwInit())
-                return -1;
-
-            /* Create a windowed mode window and its OpenGL context */
-            glfwWindowHint(GLFW_SAMPLES, 4);
-            _window = glfwCreateWindow(width, height, title, NULL, NULL);
-            if (!_window)
-            {
-                glfwTerminate();
-                return -1;
-            }
-
-            /* Make the window's context current */
-            glfwMakeContextCurrent(_window);
-
-            if (glewInit() != GLEW_OK) {
-                std::cout << "Error with Glew" << std::endl;
-                return -1;
-            }
-            std::cout << glGetString(GL_VERSION) << std::endl;
+        int InitRenderer(GLFWwindow* window, int width, int height) {
+            _window = window;
+            _width = width;
+            _height = height;
 
             glClearColor(0, 0, 0, 0);
             glViewport(0, 0, width, height);
 
             glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_origFB);
-            _width = width;
-            _height = height;
 
             glGenVertexArrays(1, &_vao);
             glBindVertexArray(_vao);
@@ -252,6 +232,13 @@ namespace sg {
         void SetSkybox(const char* posx, const char* negx, const char* posy, const char* negy, const char* posz, const char* negz) {
             const char* textureFaces[6] = { posx, negx, posy, negy, posz, negz };
             _skybox.InitSkybox(textureFaces, _vao);
+        }
+
+        void RemoveAllEntities() {
+            while (_objects.size() > 0)
+                _objects.erase(_objects.begin());
+            while (_entities.size() > 0)
+                _entities.erase(_entities.begin());
         }
 	};
 }

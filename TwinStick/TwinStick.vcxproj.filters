@@ -74,6 +74,9 @@
     <ClInclude Include="headers\Bullet.h">
       <Filter>File di origine</Filter>
     </ClInclude>
+    <ClInclude Include="headers\MapCreator.h">
+      <Filter>File di origine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertexShader_lit.glsl">

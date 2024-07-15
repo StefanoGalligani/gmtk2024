@@ -3,16 +3,13 @@
 #include <Player.h>
 #include <EnemyManager.h>
 #include <Bullet.h>
+#include <MapCreator.h>
 
-sg::Renderer renderer = sg::Renderer();
+sg::Renderer* renderer;
 Player* player;
 EnemyManager* enemyManager;
+MapCreator* mapCreator;
 sg::Model* bulletModel;
-sg::Object3D mapObj = sg::Object3D();
-sg::Object3D shedObj = sg::Object3D();
-sg::Object3D siloObj = sg::Object3D();
-sg::Object3D siloObj2 = sg::Object3D();
-sg::Object3D treeObj = sg::Object3D();
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -34,80 +31,90 @@ float shadowResy = 2048;
 class sgGame {
 public:
     void run() {
-        if (!initApplication()) return;
+        if (!initWindow()) return;
+        initGame();
         mainLoop();
         cleanup();
+        closeApplication();
     }
 
 private:
-    bool initApplication() {
-        if (renderer.InitWindow("TwinStick", resx, resy) < 0) return false;
-        renderer.InitPrograms();
+    bool initWindow() {
+        if (!glfwInit())
+            return -1;
+
+        glfwWindowHint(GLFW_SAMPLES, 4);
+        GLFWwindow* window = glfwCreateWindow(resx, resy, "TwinStick", NULL, NULL);
+        if (!window)
+        {
+            glfwTerminate();
+            return -1;
+        }
+
+        glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK) {
+            std::cout << "Error with Glew" << std::endl;
+            return -1;
+        }
+        std::cout << glGetString(GL_VERSION) << std::endl;
+
+        renderer = new sg::Renderer();
+        if (renderer->InitRenderer(window, resx, resy) < 0) return false;
+        renderer->InitPrograms();
+        return true;
+    }
+
+    void initGame() {
         BindInputs();
         InitObjects();
-
-        renderer.SetAmbientLight(0.3f);
-        return true;
+        renderer->SetAmbientLight(0.3f);
     }
 
     void mainLoop() {
         printf("Starting rendering\n");
-        while (!renderer.Terminated())
+        while (!renderer->Terminated())
         {
-            int fps = renderer.RenderFrame();
+            if (checkGameOver()) {
+                cleanup();
+                renderer->RemoveAllEntities();
+                initGame();
+            }
+
+            int fps = renderer->RenderFrame();
             std::stringstream ss{};
             ss << "TwinStick [" << fps << " FPS]";
-            glfwSetWindowTitle(renderer.GetWindow(), ss.str().c_str());
+            glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
 
             glfwPollEvents();
         }
     }
 
+    bool checkGameOver() {
+        return enemyManager->CheckCollision(player->GetGlobalPosition());
+    }
+
     void cleanup() {
+        printf("Terminating");
         delete(player);
         delete(enemyManager);
         delete(bulletModel);
-        printf("Terminating");
+        delete(mapCreator);
+    }
+
+    void closeApplication() {
+        renderer->DestroyWindow();
+        delete(renderer);
         glfwTerminate();
     }
 
     void InitObjects() {
         printf("Initializing objects\n");
-        player = new Player(&renderer, PLAYER_SPEED, shadowResx, shadowResy, resx, resy);
-        enemyManager = new EnemyManager(&renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
+        player = new Player(renderer, PLAYER_SPEED, shadowResx, shadowResy, resx, resy);
+        enemyManager = new EnemyManager(renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
+        mapCreator = new MapCreator(renderer);
         bulletModel = new sg::Model();
         bulletModel->LoadFromObj("res/models/projectile.obj");
-
-        mapObj.LoadModelFromObj("res/models/map.obj");
-        mapObj.Lit = true;
-        mapObj.ReceivesShadows = true;
-        mapObj.PerformFrustumCheck = false;
-        shedObj.LoadModelFromObj("res/models/shed.obj");
-        shedObj.Lit = true;
-        shedObj.CastsShadows = true;
-        shedObj.ReceivesShadows = true;
-        siloObj.LoadModelFromObj("res/models/silo.obj");
-        siloObj.Lit = true;
-        siloObj.CastsShadows = true;
-        siloObj.ReceivesShadows = true;
-        siloObj2.SetModel(siloObj.GetModel());
-        siloObj2.Lit = true;
-        siloObj2.CastsShadows = true;
-        siloObj2.ReceivesShadows = true;
-        siloObj2.SetGlobalPosition(0, 0, 15);
-        treeObj.LoadModelFromObj("res/models/tree.obj");
-        treeObj.Lit = true;
-        treeObj.CastsShadows = true;
-        treeObj.ReceivesShadows = true;
-        treeObj.SetGlobalPosition(-10, 0, 10);
-        
-        renderer.AddObject(&mapObj);
-        renderer.AddObject(&shedObj);
-        renderer.AddObject(&siloObj);
-        renderer.AddObject(&siloObj2);
-        renderer.AddObject(&treeObj);
-
-        printf("Buffers ready\n");
     }
 
 #pragma region input
@@ -132,28 +139,28 @@ private:
     }
 
     void BindInput(int cmd, sg::sgKeyOrMouseFun callback) {
-        sg::InputManager::Instance()->BindInput(renderer.GetWindow(), cmd, callback);
+        sg::InputManager::Instance()->BindInput(renderer->GetWindow(), cmd, callback);
     }
     void BindInput(int cmd, sg::sgCursorPosFun callback) {
-        sg::InputManager::Instance()->BindInput(renderer.GetWindow(), cmd, callback);
+        sg::InputManager::Instance()->BindInput(renderer->GetWindow(), cmd, callback);
     }
     void BindInput(int cmd, sg::sgWindowSizeFun callback) {
-        sg::InputManager::Instance()->BindInput(renderer.GetWindow(), cmd, callback);
+        sg::InputManager::Instance()->BindInput(renderer->GetWindow(), cmd, callback);
     }
 
     static void onEscKeyPressed(int mods) {
-        renderer.DestroyWindow();
+        renderer->DestroyWindow();
     }
 
     static void onSpaceKeyPressed(int mods) {
         showTriangulation = !showTriangulation;
-        renderer.SetShowTriangulation(showTriangulation);
+        renderer->SetShowTriangulation(showTriangulation);
     }
 
     static void onWindowResize(int x, int y) {
         resx = x;
         resy = y;
-        renderer.SetResolution(resx, resy);
+        renderer->SetResolution(resx, resy);
         player->UpdateCameraResolution(resx, resy);
     }
 
@@ -167,10 +174,10 @@ private:
             BULLET_SPEED,
             BULLET_LIFETIME,
             enemyManager,
-            &renderer,
+            renderer,
             bulletModel
         );
-        renderer.AddObject(bullet);
+        renderer->AddObject(bullet);
     }
 
     static void onLeftMouseButtonRelease(int mods) {
@@ -187,35 +194,35 @@ private:
     }
 
     static void onWPressed(int mods) {
-        player->AddVelocityZ(-1);
+        player->SetVert(-1, true);
     }
 
     static void onWReleased(int mods) {
-        player->AddVelocityZ(1);
+        player->SetVert(-1, false);
     }
 
     static void onSPressed(int mods) {
-        player->AddVelocityZ(1);
+        player->SetVert(1, true);
     }
 
     static void onSReleased(int mods) {
-        player->AddVelocityZ(-1);
+        player->SetVert(1, false);
     }
 
     static void onAPressed(int mods) {
-        player->AddVelocityX(-1);
+        player->SetHoriz(-1, true);
     }
 
     static void onAReleased(int mods) {
-        player->AddVelocityX(1);
+        player->SetHoriz(-1, false);
     }
 
     static void onDPressed(int mods) {
-        player->AddVelocityX(1);
+        player->SetHoriz(1, true);
     }
 
     static void onDReleased(int mods) {
-        player->AddVelocityX(-1);
+        player->SetHoriz(1, false);
     }
 
     static void onMouseDrag(double xpos, double ypos) {
