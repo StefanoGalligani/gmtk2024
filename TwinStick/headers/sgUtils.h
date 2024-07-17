@@ -177,7 +177,7 @@ namespace sg {
     }
 
     void UpdateLightPos(glm::vec3 lightPos, glm::mat4 mv, GLuint program) {
-        glm::vec3 lightPosCy = glm::vec3(mv * glm::vec4(lightPos.x, lightPos.y, lightPos.z, 0));
+        glm::vec3 lightPosCy = glm::vec3(mv * glm::vec4(lightPos.x, lightPos.y, lightPos.z, 1));
         if (program > 0) {
             glUseProgram(program);
             glUniform3f(glGetUniformLocation(program, "lightPos"), lightPosCy.x, lightPosCy.y, lightPosCy.z);

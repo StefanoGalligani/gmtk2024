@@ -163,7 +163,6 @@ namespace sg {
 
             UpdateOrStart();
 
-            sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(_mainCamera->GetView()))), _shadowedProgram, "mvt");
             sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
             sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetView())), _shadowedProgram, "matrixVinverse");
             sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _shadowedProgram);
@@ -187,6 +186,7 @@ namespace sg {
                 if (_objects[i]->Lit) {
                     if (_objects[i]->ReceivesShadows) {
                         sg::SetMatrix(_mainCamera->GetView() * _objects[i]->GetModelMatrix(), _shadowedProgram, "mv");
+                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(_mainCamera->GetView() * _objects[i]->GetModelMatrix()))), _shadowedProgram, "mvt");
                         sg::SetMatrix(_spotLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "shadowMatrix");
                         _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
                     } else {
