@@ -185,8 +185,9 @@ namespace sg {
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {
                     if (_objects[i]->ReceivesShadows) {
-                        sg::SetMatrix(_mainCamera->GetView() * _objects[i]->GetModelMatrix(), _shadowedProgram, "mv");
-                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(_mainCamera->GetView() * _objects[i]->GetModelMatrix()))), _shadowedProgram, "mvt");
+                        glm::mat4 mv = _mainCamera->GetView() * _objects[i]->GetModelMatrix();
+                        sg::SetMatrix(mv, _shadowedProgram, "mv");
+                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _shadowedProgram, "mvt");
                         sg::SetMatrix(_spotLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "shadowMatrix");
                         _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
                     } else {

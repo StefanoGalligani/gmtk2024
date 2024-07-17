@@ -23,13 +23,13 @@ private:
 	}
 
 	void InitSpawnPoints() {
-		_spawnPoints[0] = glm::vec2(-25, -25);
-		_spawnPoints[1] = glm::vec2(25, -25);
-		_spawnPoints[2] = glm::vec2(-35, 25);
+		_spawnPoints[0] = glm::vec2(-25, 25);
+		_spawnPoints[1] = glm::vec2(25, 25);
+		_spawnPoints[2] = glm::vec2(-35, -25);
 		_spawnPoints[3] = glm::vec2(35, 0);
-		_spawnPoints[4] = glm::vec2(35, 20);
-		_spawnPoints[5] = glm::vec2(-15, 45);
-		_spawnPoints[6] = glm::vec2(15, 45);
+		_spawnPoints[4] = glm::vec2(35, -20);
+		_spawnPoints[5] = glm::vec2(-15, -45);
+		_spawnPoints[6] = glm::vec2(15, -45);
 	}
 
 	void SpawnZombies(int n) {
