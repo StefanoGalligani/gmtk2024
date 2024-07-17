@@ -32,8 +32,10 @@ void main() {
 	vec3 lightDir = normalize(lightPos - viewPosition);
 	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
 	
-	vec3 p = lightViewPosition.xyz / lightViewPosition.w;
-	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0) { diffuseComponent = 0; }
+	vec3 p = lightViewPosition.xyz;
+	p.z *= 0.99999;
+	p /= lightViewPosition.w;
+	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) { diffuseComponent = 0; }
 	else { diffuseComponent *= texture(shadowTexture, p); }
 
 	vec3 camDir = -normalize(viewPosition);

@@ -7,35 +7,19 @@ namespace sg {
 	class SpotLight3D : public View3D {
 	private:
 		glm::mat4 _shadowMatrix;
-		float _bias;
 		sg::FrameBuffer *_depthBuffer;
 		int _shadowWidth;
 		int _shadowHeight;
 
-		void UpdateBias() {
-			_bias = 0.0001f;
-		}
-
 	protected:
 		void UpdateView() override {
 			View3D::UpdateView();
-			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f - _bias)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
-			UpdateBias();
+			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
 		}
 
 	public:
 		SpotLight3D() : View3D() {
 			_shadowMatrix = glm::mat4(1);
-		}
-
-		void LookAtLocal(glm::vec3 target) override {
-			View3D::LookAtLocal(target);
-			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f - _bias)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
-		}
-
-		void LookAtGlobal(glm::vec3 target) override {
-			View3D::LookAtGlobal(target);
-			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f - _bias)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
 		}
 
 		void SetupShadows(int width, int height, int textureUnit) {
