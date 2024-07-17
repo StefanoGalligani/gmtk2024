@@ -121,13 +121,13 @@ namespace sg {
 	#pragma region Scale
 
 		inline void Transform::Scale(float x, float y, float z) {
-			scale.x += x;
-			scale.y += y;
-			scale.z += z;
+			scale.x *= x;
+			scale.y *= y;
+			scale.z *= z;
 		}
 
 		inline void Transform::Scale(glm::vec3 scale) {
-			scale += scale;
+			this->scale *= scale;
 		}
 
 	#pragma endregion

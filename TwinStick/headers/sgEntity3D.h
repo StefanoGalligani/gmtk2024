@@ -36,8 +36,8 @@ namespace sg {
 			matrix[0][1] = _parent->_globalTransform.up.x;
 			matrix[1][1] = _parent->_globalTransform.up.y;
 			matrix[2][1] = -_parent->_globalTransform.up.z;
-			matrix[0][2] = -_parent->_globalTransform.forward.x;
-			matrix[1][2] = -_parent->_globalTransform.forward.y;
+			matrix[0][2] = _parent->_globalTransform.forward.x;
+			matrix[1][2] = _parent->_globalTransform.forward.y;
 			matrix[2][2] = -_parent->_globalTransform.forward.z;
 			return matrix;
 		}

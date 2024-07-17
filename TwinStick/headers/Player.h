@@ -30,7 +30,7 @@ public:
 
 		_mainCamera = new sg::Camera3D();
 		_mainCamera->SetPerspective(1.5f, (float)resx / resy, 0.05f, 3000.0f);
-		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 6));
+		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 5));
 		_mainCamera->LookAtGlobal(glm::vec3(0, 0, 0));
 
 		AddChild(_playerObj, false);
@@ -41,7 +41,6 @@ public:
 		renderer->SetMainCamera(_mainCamera);
 		renderer->SetSpotLight(_spotLight);
 		renderer->AddEntity(this);
-
 	}
 
 	void SetHoriz(int dir, bool pressed) {
