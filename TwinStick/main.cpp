@@ -10,6 +10,7 @@ Player* player;
 EnemyManager* enemyManager;
 MapCreator* mapCreator;
 sg::Model* bulletModel;
+sg::DirectionalLight3D* sunLight;
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -20,8 +21,8 @@ double prevy = 0;
 
 float resx = 1080;
 float resy = 720;
-float shadowResx = 2048;
-float shadowResy = 2048;
+int shadowResx = 1024;
+int shadowResy = 1024;
 
 #define PLAYER_SPEED 10
 #define ENEMY_SPEED 4
@@ -61,7 +62,6 @@ private:
 
         renderer = new sg::Renderer();
         if (renderer->InitRenderer(window, resx, resy) < 0) return false;
-        renderer->InitPrograms();
         return true;
     }
 
@@ -100,6 +100,7 @@ private:
         delete(enemyManager);
         delete(bulletModel);
         delete(mapCreator);
+        delete(sunLight);
     }
 
     void closeApplication() {
@@ -115,6 +116,10 @@ private:
         mapCreator = new MapCreator(renderer);
         bulletModel = new sg::Model();
         bulletModel->LoadFromObj("res/models/projectile.obj");
+
+        sunLight = new sg::DirectionalLight3D(shadowResx*3, shadowResy*3, 40, 1, 50, 130, glm::vec3(0.1, -0.5, -0.5));
+        sunLight->SetIntensity(0.2);
+        renderer->SetDirectionalLight(sunLight);
     }
 
 #pragma region input

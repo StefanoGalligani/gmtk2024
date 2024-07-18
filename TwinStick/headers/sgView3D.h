@@ -8,11 +8,33 @@ namespace sg {
 		glm::mat4 _projectionMatrix;
 		glm::mat4 _viewMatrix;
 		glm::mat4 _viewProjectionMatrix;
+		float _fov;
+		float _aspectRatio;
+		float _nearPlane;
+		float _farPlane;
 
 	protected:
 		virtual void UpdateView() {
 			_viewMatrix = glm::lookAt(GetGlobalPosition(), GetGlobalPosition() + GlobalForward(), GlobalUp());
 			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
+		}
+
+		void SetPerspective() {
+			_projectionMatrix = glm::perspective(_fov, _aspectRatio, _nearPlane, _farPlane);
+
+			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
+		}
+
+		void SetOrthogonal() {
+			_projectionMatrix = glm::scale(glm::vec3(0.5, 0.5 * _aspectRatio, -0.5));
+			_projectionMatrix = glm::translate(_projectionMatrix, glm::vec3(0, 0, 2));
+			_projectionMatrix = glm::scale(_projectionMatrix, glm::vec3(1 / _fov, 1 / _fov, 1 / (_farPlane - _nearPlane)));
+			_projectionMatrix = glm::translate(_projectionMatrix, glm::vec3(0, 0, _nearPlane));
+
+			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
+		}
+
+		virtual void UpdateProjectionMatrix() {
 		}
 
 		void LocalRotationFromGlobal(bool updateChildren = true) override { Entity3D::LocalRotationFromGlobal(updateChildren); UpdateView(); }
@@ -21,45 +43,32 @@ namespace sg {
 		void GlobalPositionFromLocal(bool updateChildren = true) override { Entity3D::GlobalPositionFromLocal(updateChildren); UpdateView(); }
 
 	public:
-		View3D() : Entity3D() {
-			_projectionMatrix = glm::mat4(1);
-			_viewMatrix = glm::mat4(1);
-			_viewProjectionMatrix = glm::mat4(1);
+		View3D(float fov, float aspectRatio, float nearPlane, float farPlane) : Entity3D() {
+			_fov = fov;
+			_aspectRatio = aspectRatio;
+			_nearPlane = nearPlane;
+			_farPlane = farPlane;
 		}
 
-		void SetPerspective(float fov, float aspectRatio, float nearPlane, float farPlane) {
-			_projectionMatrix = glm::perspective(fov, aspectRatio, nearPlane, farPlane);
-
-			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
+		void SetFov(float fov) {
+			_fov = fov;
+			UpdateProjectionMatrix();
 		}
 
-		void SetOrthogonal(float aspectRatio, float zoom) {
-			_projectionMatrix = glm::scale(glm::vec3(0.5, 0.5 * aspectRatio, -0.05));
-			_projectionMatrix = glm::translate(_projectionMatrix, glm::vec3(0, 0, 1));
-			_projectionMatrix = glm::scale(_projectionMatrix, glm::vec3(zoom, zoom, zoom));
-
-			_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
+		void SetAspectRatio(float aspectRatio) {
+			_aspectRatio = aspectRatio;
+			UpdateProjectionMatrix();
 		}
 
-		/*void TranslateLocal(float x, float y, float z) override { Entity3D::TranslateLocal(x, y, z); UpdateView(); }
-		void TranslateLocal(glm::vec3 vec) override { Entity3D::TranslateLocal(vec); UpdateView(); }
-		void SetLocalPosition(float x, float y, float z) override { Entity3D::SetLocalPosition(x, y, z); UpdateView(); }
-		void SetLocalPosition(glm::vec3 pos) override { Entity3D::SetLocalPosition(pos); UpdateView(); }
-		void RotateLocal(float x, float y, float z) override { Entity3D::RotateLocal(x, y, z); UpdateView(); }
-		void RotateLocal(glm::vec3 axis, float angle) override { Entity3D::RotateLocal(axis, angle); UpdateView(); }
-		void RotateAroundLocal(glm::vec3 axis, glm::vec3 point, float angle) override { Entity3D::RotateAroundLocal(axis, point, angle); UpdateView(); }
-		void LookAtLocal(glm::vec3 target, glm::vec3 up) override { Entity3D::LookAtLocal(target, up); UpdateView(); }
-		void LookAtLocal(glm::vec3 target) override { Entity3D::LookAtLocal(target); UpdateView(); }
+		void SetNearPlane(float nearPlane) {
+			_nearPlane = nearPlane;
+			UpdateProjectionMatrix();
+		}
 
-		void TranslateGlobal(float x, float y, float z) override { Entity3D::TranslateGlobal(x, y, z); UpdateView(); }
-		void TranslateGlobal(glm::vec3 vec) override { Entity3D::TranslateGlobal(vec); UpdateView(); }
-		void SetGlobalPosition(float x, float y, float z) override { Entity3D::SetGlobalPosition(x, y, z); UpdateView(); }
-		void SetGlobalPosition(glm::vec3 pos) override { Entity3D::SetGlobalPosition(pos); UpdateView(); }
-		void RotateGlobal(float x, float y, float z) override { Entity3D::RotateGlobal(x, y, z); UpdateView(); }
-		void RotateGlobal(glm::vec3 axis, float angle) override { Entity3D::RotateGlobal(axis, angle); UpdateView(); }
-		void RotateAroundGlobal(glm::vec3 axis, glm::vec3 point, float angle) override { Entity3D::RotateAroundGlobal(axis, point, angle); UpdateView(); }
-		void LookAtGlobal(glm::vec3 target, glm::vec3 up) override { Entity3D::LookAtGlobal(target, up); UpdateView(); }
-		void LookAtGlobal(glm::vec3 target) override { Entity3D::LookAtGlobal(target); UpdateView(); }*/
+		void SetFarPlane(float farPlane) {
+			_farPlane = farPlane;
+			UpdateProjectionMatrix();
+		}
 
 		glm::mat4 GetViewProjection() {
 			return _viewProjectionMatrix;

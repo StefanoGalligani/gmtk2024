@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <glm/glm/gtc/type_ptr.hpp>
+#include <sgDirectionalLight3D.h>
 
 namespace sg {
 
@@ -187,6 +188,17 @@ namespace sg {
         glActiveTexture(GL_TEXTURE0 + 3);
         glBindTexture(GL_TEXTURE_2D, spotLight->GetShadowTexture()); //variare se la texture può essere un rettangolo
         glUniform1i(glGetUniformLocation(program, "spotLight.shadowTexture"), 3);
+    }
+
+    void UpdateDirectionalLight(sg::DirectionalLight3D* dirLight, GLuint program) {
+        if (program <= 0) return;
+        glUseProgram(program);
+        glUniform3fv(glGetUniformLocation(program, "dirLight.dir"), 1, glm::value_ptr(dirLight->GlobalForward()));
+        glUniform3fv(glGetUniformLocation(program, "dirLight.color"), 1, glm::value_ptr(dirLight->GetColor()));
+        glUniform1f(glGetUniformLocation(program, "dirLight.intensity"), dirLight->GetIntensity());
+        glActiveTexture(GL_TEXTURE0 + 4);
+        glBindTexture(GL_TEXTURE_2D, dirLight->GetShadowTexture()); //variare se la texture può essere un rettangolo
+        glUniform1i(glGetUniformLocation(program, "dirLight.shadowTexture"), 4);
     }
 
     double getCurrentTimeMillis() {
