@@ -184,6 +184,9 @@ namespace sg {
         glUniform3fv(glGetUniformLocation(program, "spotLight.pos"), 1, glm::value_ptr(lightPosCy));
         glUniform3fv(glGetUniformLocation(program, "spotLight.color"), 1, glm::value_ptr(spotLight->GetColor()));
         glUniform1f(glGetUniformLocation(program, "spotLight.intensity"), spotLight->GetIntensity());
+        glActiveTexture(GL_TEXTURE0 + 3);
+        glBindTexture(GL_TEXTURE_2D, spotLight->GetShadowTexture()); //variare se la texture può essere un rettangolo
+        glUniform1i(glGetUniformLocation(program, "spotLight.shadowTexture"), 3);
     }
 
     double getCurrentTimeMillis() {

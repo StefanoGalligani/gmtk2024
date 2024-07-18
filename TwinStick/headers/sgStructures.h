@@ -16,7 +16,7 @@ namespace sg {
 		bool isRectangle = false;
 		bool isValid = false;
 
-		sg::FrameBuffer(float width, float height, int textureUnit, bool createTexture = true, bool createDepthMap = false, bool createDepthBuffer = true, bool rectangleTexture = false) {
+		sg::FrameBuffer(float width, float height, bool createTexture = true, bool createDepthMap = false, bool createDepthBuffer = true, bool rectangleTexture = false) {
 			isRectangle = rectangleTexture;
 			glGenFramebuffers(1, &bufferIndex);
 			glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
@@ -24,7 +24,7 @@ namespace sg {
 			if (createTexture) {
 				hasTexture = true;
 				glGenTextures(1, &renderTexture);
-				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glActiveTexture(GL_TEXTURE0);
 				GLuint textureType = rectangleTexture ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D;
 				glBindTexture(textureType, renderTexture);
 				glTexImage2D(textureType, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -33,12 +33,11 @@ namespace sg {
 				glTexParameterf(textureType, GL_TEXTURE_MAX_ANISOTROPY, 5);
 
 				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
-				textureUnit++;
 			}
 			if (createDepthMap) {
 				hasDepthMap = true;
 				glGenTextures(1, &depthMap);
-				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glActiveTexture(GL_TEXTURE0);
 				GLuint textureType = rectangleTexture ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D;
 				glBindTexture(textureType, depthMap);
 				glTexImage2D(textureType, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);

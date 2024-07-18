@@ -26,10 +26,14 @@ namespace sg {
 			_intensity = 1;
 		}
 
-		void SetupShadows(int width, int height, int textureUnit) {
-			_depthBuffer = new sg::FrameBuffer(width, height, textureUnit, false, true, false, false);
+		void SetupShadows(int width, int height) {
+			_depthBuffer = new sg::FrameBuffer(width, height, false, true, false, false);
 			_shadowWidth = width;
 			_shadowHeight = height;
+		}
+
+		GLuint GetShadowTexture() {
+			return _depthBuffer->depthMap;
 		}
 
 		void SetColor(glm::vec3 color) {

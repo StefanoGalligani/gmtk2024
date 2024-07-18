@@ -42,8 +42,13 @@ vec3 CalcSpotLightComponent(vec3 albedo, vec3 specular, vec3 camDir) {
 	vec3 p = spotLightViewPosition.xyz;
 	//p.z *= 0.99999;
 	p /= spotLightViewPosition.w;
-	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) { diffuseComponent = 0; specularComponent = 0; }
-	else { diffuseComponent *= texture(spotLight.shadowTexture, p); }
+	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) {
+		diffuseComponent = 0; specularComponent = 0;
+	} else {
+		float litValue = texture(spotLight.shadowTexture, p);
+		diffuseComponent *= litValue;
+		specularComponent *= litValue;
+	}
 	
 	// blinn-phong
 	vec3 shading = spotLight.color * (diffuseComponent * albedo) + specular * specularComponent;
