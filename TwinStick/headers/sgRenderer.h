@@ -177,11 +177,13 @@ namespace sg {
             glClear(GL_DEPTH_BUFFER_BIT);
             glViewport(0, 0, _spotLight->GetShadowWidth(), _spotLight->GetShadowHeight());
 
+            glCullFace(GL_FRONT);
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->CastsShadows) {
                     _objects[i]->Draw(_spotLight->GetViewProjection(), _depthProgram);
                 }
             }
+            glCullFace(GL_BACK);
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _origFB);
             glViewport(0, 0, _width, _height);
