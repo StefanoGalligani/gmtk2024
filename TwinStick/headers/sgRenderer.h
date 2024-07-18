@@ -75,9 +75,9 @@ namespace sg {
 
         void UpdateLights() {
             sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _shadowedProgram);
-            sg::UpdateDirectionalLight(_directionalLight, _shadowedProgram);
+            sg::UpdateDirectionalLight(_directionalLight, _mainCamera->GetView(), _shadowedProgram);
             sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _litProgram);
-            sg::UpdateDirectionalLight(_directionalLight, _litProgram);
+            sg::UpdateDirectionalLight(_directionalLight, _mainCamera->GetView(), _litProgram);
         }
 
         void RenderShadows() {

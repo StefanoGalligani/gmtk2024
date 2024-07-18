@@ -180,9 +180,9 @@ namespace sg {
 
     void UpdateSpotLight(sg::SpotLight3D* spotLight, glm::mat4 mv, GLuint program) {
         if (program <= 0) return;
-        glm::vec3 lightPosCy = glm::vec3(mv * glm::vec4(spotLight->GetGlobalPosition(), 1));
+        glm::vec3 lightPos = glm::vec3(mv * glm::vec4(spotLight->GetGlobalPosition(), 1));
         glUseProgram(program);
-        glUniform3fv(glGetUniformLocation(program, "spotLight.pos"), 1, glm::value_ptr(lightPosCy));
+        glUniform3fv(glGetUniformLocation(program, "spotLight.pos"), 1, glm::value_ptr(lightPos));
         glUniform3fv(glGetUniformLocation(program, "spotLight.color"), 1, glm::value_ptr(spotLight->GetColor()));
         glUniform1f(glGetUniformLocation(program, "spotLight.intensity"), spotLight->GetIntensity());
         glActiveTexture(GL_TEXTURE0 + 3);
@@ -190,10 +190,11 @@ namespace sg {
         glUniform1i(glGetUniformLocation(program, "spotLight.shadowTexture"), 3);
     }
 
-    void UpdateDirectionalLight(sg::DirectionalLight3D* dirLight, GLuint program) {
+    void UpdateDirectionalLight(sg::DirectionalLight3D* dirLight, glm::mat4 mv, GLuint program) {
         if (program <= 0) return;
+        glm::vec3 lightDir = glm::vec3(mv * glm::vec4(dirLight->GlobalForward(), 0));
         glUseProgram(program);
-        glUniform3fv(glGetUniformLocation(program, "dirLight.dir"), 1, glm::value_ptr(dirLight->GlobalForward()));
+        glUniform3fv(glGetUniformLocation(program, "dirLight.dir"), 1, glm::value_ptr(lightDir));
         glUniform3fv(glGetUniformLocation(program, "dirLight.color"), 1, glm::value_ptr(dirLight->GetColor()));
         glUniform1f(glGetUniformLocation(program, "dirLight.intensity"), dirLight->GetIntensity());
         glActiveTexture(GL_TEXTURE0 + 4);
