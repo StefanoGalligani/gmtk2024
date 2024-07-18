@@ -68,7 +68,7 @@ public:
         GenerateTrees(10, glm::vec3(10, 0, -30), glm::vec3(40, 0, -20));
         GenerateTrees(10, glm::vec3(-40, 0, 17), glm::vec3(-30, 0, 40));
         GenerateTrees(15, glm::vec3(30, 0, -20), glm::vec3(40, 0, 40));
-        GenerateTrees(15, glm::vec3(-27, 0, 40), glm::vec3(27, 0, 50));
+        GenerateTrees(15, glm::vec3(-27, 0, 40), glm::vec3(27, 0, 43));
 	}
 
 	~MapCreator() {

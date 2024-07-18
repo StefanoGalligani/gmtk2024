@@ -1,16 +1,18 @@
 #version 330 core
 
-uniform vec3 Kd;
-uniform float d;
-
-uniform sampler2D dTexture;
-uniform int dTextureSet;
+struct Material {
+	vec3 Kd;
+	float d;
+	sampler2D dTexture;
+	int dTextureSet;
+};  
+uniform Material material;
 
 in vec2 textureC;
 
 out vec4 color;
 
 void main() {
-	vec3 albedo = (dTextureSet == 1) ? texture(dTexture, textureC).xyz * Kd : Kd;
-	color = vec4(albedo, d);
+	vec3 albedo = (material.dTextureSet == 1) ? texture(material.dTexture, textureC).xyz * material.Kd : material.Kd;
+	color = vec4(albedo, material.d);
 }

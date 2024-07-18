@@ -11,12 +11,12 @@ layout(location=2) in vec3 normal;
 out vec3 viewPosition;
 out vec2 textureC;
 out vec3 fragNormal;
-out vec4 lightViewPosition;
+out vec4 spotLightViewPosition;
 
 void main() {
 	gl_Position = mvp * vec4(position, 1);
 	viewPosition = (mv * vec4(position, 1)).xyz;
 	fragNormal = mvt * normal;
 	textureC = textureCoord;
-	lightViewPosition = shadowMatrix * vec4(position,1);
+	spotLightViewPosition = shadowMatrix * vec4(position,1);
 }

@@ -15,6 +15,7 @@ namespace sg {
         GLuint _shadowedProgram;
         GLuint _depthProgram;
         GLuint _unlitProgram;
+        GLuint _litProgram;
         GLuint _triangulationProgram;
         bool _showTriangulation;
         SkyboxRenderer _skybox;
@@ -64,6 +65,7 @@ namespace sg {
             _shadowedProgram = sg::CreateProgram("shaders/vertexShader_shadowed.glsl", "shaders/fragmentShader_shadowed.glsl");
             _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl");
             _unlitProgram = sg::CreateProgram("shaders/vertexShader_unlit.glsl", "shaders/fragmentShader_unlit.glsl");
+            _litProgram = sg::CreateProgram("shaders/vertexShader_lit.glsl", "shaders/fragmentShader_lit.glsl");
             _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl", "shaders/geometryShader_triangulation.glsl");
         }
 
@@ -75,6 +77,8 @@ namespace sg {
         void SetAmbientLight(float l) {
             glUseProgram(_shadowedProgram);
             glUniform1f(glGetUniformLocation(_shadowedProgram, "ambientLight"), l);
+            glUseProgram(_litProgram);
+            glUniform1f(glGetUniformLocation(_litProgram, "ambientLight"), l);
         }
 
         void SetShowTriangulation(bool t) {
@@ -163,9 +167,10 @@ namespace sg {
 
             UpdateOrStart();
 
-            sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
-            sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetView())), _shadowedProgram, "matrixVinverse");
+            //sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
+            //sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetView())), _shadowedProgram, "matrixVinverse");
             sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _shadowedProgram);
+            sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _litProgram);
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLight->GetShadowBuffer().bufferIndex);
             glClearColor(0, 0, 0, 0);
@@ -184,22 +189,19 @@ namespace sg {
 
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {
+                    glm::mat4 mv = _mainCamera->GetView() * _objects[i]->GetModelMatrix();
                     if (_objects[i]->ReceivesShadows) {
-                        glm::mat4 mv = _mainCamera->GetView() * _objects[i]->GetModelMatrix();
                         sg::SetMatrix(mv, _shadowedProgram, "mv");
                         sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _shadowedProgram, "mvt");
                         sg::SetMatrix(_spotLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "shadowMatrix");
                         _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
                     } else {
-                        //shadowed unlit
+                        sg::SetMatrix(mv, _litProgram, "mv");
+                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _litProgram, "mvt");
+                        _objects[i]->Draw(_mainCamera->GetViewProjection(), _litProgram);
                     }
                 } else {
-                    if (_objects[i]->ReceivesShadows) {
-                        //not shadowed lit
-                    }
-                    else {
-                        _objects[i]->Draw(_mainCamera->GetViewProjection(), _unlitProgram);
-                    }
+                    _objects[i]->Draw(_mainCamera->GetViewProjection(), _unlitProgram);
                 }
             }
 

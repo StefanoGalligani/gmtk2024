@@ -139,56 +139,56 @@ namespace sg {
         void SetMaterialData(GLuint programId, Material* mat) {
             SetTexturesData(mat);
             glUseProgram(programId);
-            GLint Kd = glGetUniformLocation(programId, "Kd");
+            GLint Kd = glGetUniformLocation(programId, "material.Kd");
             glUniform3f(Kd, mat->Kd[0], mat->Kd[1], mat->Kd[2]);
-            GLint Ks = glGetUniformLocation(programId, "Ks");
+            GLint Ks = glGetUniformLocation(programId, "material.Ks");
             glUniform3f(Ks, mat->Ks[0], mat->Ks[1], mat->Ks[2]);
-            GLint Ka = glGetUniformLocation(programId, "Ka");
+            GLint Ka = glGetUniformLocation(programId, "material.Ka");
             glUniform3f(Ka, mat->Ka[0], mat->Ka[1], mat->Ka[2]);
-            GLint Ns = glGetUniformLocation(programId, "Ns");
+            GLint Ns = glGetUniformLocation(programId, "material.Ns");
             glUniform1f(Ns, mat->Ns);
-            GLint d = glGetUniformLocation(programId, "d");
+            GLint d = glGetUniformLocation(programId, "material.d");
             glUniform1f(d, mat->d);
             if (mat->texture_Kd.isPresent) {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, mat->texture_Kd.index);
-                glUniform1i(glGetUniformLocation(programId, "dTexture"), 0);
-                glUniform1i(glGetUniformLocation(programId, "dTextureSet"), 1);
+                glUniform1i(glGetUniformLocation(programId, "material.dTexture"), 0);
+                glUniform1i(glGetUniformLocation(programId, "material.dTextureSet"), 1);
             }
             else {
-                glUniform1i(glGetUniformLocation(programId, "dTextureSet"), 0);
+                glUniform1i(glGetUniformLocation(programId, "material.dTextureSet"), 0);
             }
             if (mat->texture_Ks.isPresent) {
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, mat->texture_Ks.index);
-                glUniform1i(glGetUniformLocation(programId, "sTexture"), 1);
-                glUniform1i(glGetUniformLocation(programId, "sTextureSet"), 1);
+                glUniform1i(glGetUniformLocation(programId, "material.sTexture"), 1);
+                glUniform1i(glGetUniformLocation(programId, "material.sTextureSet"), 1);
             }
             else {
-                glUniform1i(glGetUniformLocation(programId, "sTextureSet"), 0);
+                glUniform1i(glGetUniformLocation(programId, "material.sTextureSet"), 0);
             }
             if (mat->texture_Ka.isPresent) {
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, mat->texture_Ka.index);
-                glUniform1i(glGetUniformLocation(programId, "aTexture"), 2);
-                glUniform1i(glGetUniformLocation(programId, "aTextureSet"), 1);
+                glUniform1i(glGetUniformLocation(programId, "material.aTexture"), 2);
+                glUniform1i(glGetUniformLocation(programId, "material.aTextureSet"), 1);
             }
             else {
-                glUniform1i(glGetUniformLocation(programId, "aTextureSet"), 0);
+                glUniform1i(glGetUniformLocation(programId, "material.aTextureSet"), 0);
             }
         }
 
         void SetMaterialData(GLuint programId) {
             glUseProgram(programId);
-            glUniform3f(glGetUniformLocation(programId, "Kd"), 0.4, 0.4, 0.4);
-            glUniform3f(glGetUniformLocation(programId, "Ks"), 0.4, 0.4, 0.4);
-            glUniform3f(glGetUniformLocation(programId, "Ka"), 0.6, 0.6, 0.6);
-            glUniform1f(glGetUniformLocation(programId, "Ns"), 20);
-            glUniform1f(glGetUniformLocation(programId, "d"), 1);
+            glUniform3f(glGetUniformLocation(programId, "material.Kd"), 1, 1, 1);
+            glUniform3f(glGetUniformLocation(programId, "material.Ks"), 0.4, 0.4, 0.4);
+            glUniform3f(glGetUniformLocation(programId, "material.Ka"), 1, 1, 1);
+            glUniform1f(glGetUniformLocation(programId, "material.Ns"), 20);
+            glUniform1f(glGetUniformLocation(programId, "material.d"), 1);
 
-            glUniform1i(glGetUniformLocation(programId, "dTextureSet"), 0);
-            glUniform1i(glGetUniformLocation(programId, "sTextureSet"), 0);
-            glUniform1i(glGetUniformLocation(programId, "aTextureSet"), 0);
+            glUniform1i(glGetUniformLocation(programId, "material.dTextureSet"), 0);
+            glUniform1i(glGetUniformLocation(programId, "material.sTextureSet"), 0);
+            glUniform1i(glGetUniformLocation(programId, "material.aTextureSet"), 0);
         }
 	};
 
