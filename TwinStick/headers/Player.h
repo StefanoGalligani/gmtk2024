@@ -26,6 +26,8 @@ public:
 		_spotLight = new sg::SpotLight3D();
 		_spotLight->SetPerspective(1.0f, (float)shadowResx / shadowResy, 0.01f, 100.0f);
 		_spotLight->SetGlobalPosition(glm::vec3(-0.2f, 1.18f, -1.27f));
+		_spotLight->SetColor(glm::vec3(1.0, 1.0, 0.8));
+		_spotLight->SetIntensity(1);
 		renderer->SetupShadows(_spotLight, shadowResx, shadowResy);
 
 		_mainCamera = new sg::Camera3D();

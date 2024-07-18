@@ -1,6 +1,11 @@
 #version 330 core
 
-uniform vec3 lightPos;
+struct SpotLight {
+	vec3 pos;
+	vec3 color;
+	float intensity;
+};
+uniform SpotLight spotLight;
 uniform float ambientLight;
 
 struct Material {
@@ -25,14 +30,14 @@ in vec3 fragNormal;
 out vec4 color;
 
 vec3 CalcLightComponent(vec3 albedo, vec3 specular, vec3 camDir) {
-	vec3 lightDir = normalize(lightPos - viewPosition);
+	vec3 lightDir = normalize(spotLight.pos - viewPosition);
 	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
 	
 	vec3 bounceDir = normalize(lightDir + camDir);
 	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
 	
-	//modified blinn-phong
-	return diffuseComponent * (albedo + specular * specularComponent);
+	//blinn-phong
+	return diffuseComponent * albedo + specular * specularComponent;
 }
 
 void main() {

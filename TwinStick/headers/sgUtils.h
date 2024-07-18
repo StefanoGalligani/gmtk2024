@@ -5,6 +5,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 namespace sg {
 
@@ -176,12 +177,13 @@ namespace sg {
         return programID;
     }
 
-    void UpdateLightPos(glm::vec3 lightPos, glm::mat4 mv, GLuint program) {
-        glm::vec3 lightPosCy = glm::vec3(mv * glm::vec4(lightPos.x, lightPos.y, lightPos.z, 1));
-        if (program > 0) {
-            glUseProgram(program);
-            glUniform3f(glGetUniformLocation(program, "lightPos"), lightPosCy.x, lightPosCy.y, lightPosCy.z);
-        }
+    void UpdateSpotLight(sg::SpotLight3D* spotLight, glm::mat4 mv, GLuint program) {
+        if (program <= 0) return;
+        glm::vec3 lightPosCy = glm::vec3(mv * glm::vec4(spotLight->GetGlobalPosition(), 1));
+        glUseProgram(program);
+        glUniform3fv(glGetUniformLocation(program, "spotLight.pos"), 1, glm::value_ptr(lightPosCy));
+        glUniform3fv(glGetUniformLocation(program, "spotLight.color"), 1, glm::value_ptr(spotLight->GetColor()));
+        glUniform1f(glGetUniformLocation(program, "spotLight.intensity"), spotLight->GetIntensity());
     }
 
     double getCurrentTimeMillis() {

@@ -169,8 +169,8 @@ namespace sg {
 
             //sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetViewProjection())), _shadowedProgram, "matrixPV");
             //sg::SetMatrix(glm::inverse(glm::mat3(_mainCamera->GetView())), _shadowedProgram, "matrixVinverse");
-            sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _shadowedProgram);
-            sg::UpdateLightPos(_spotLight->GetGlobalPosition(), _mainCamera->GetView(), _litProgram);
+            sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _shadowedProgram);
+            sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _litProgram);
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLight->GetShadowBuffer().bufferIndex);
             glClearColor(0, 0, 0, 0);
@@ -229,7 +229,7 @@ namespace sg {
         void SetupShadows(sg::SpotLight3D* light, int shadowResx, int shadowResy) {
             light->SetupShadows(shadowResx, shadowResy, 5); //il 5 è arbitrario, poi andrà fatto gestire al TextureManager
             glUseProgram(_shadowedProgram);
-            glUniform1i(glGetUniformLocation(_shadowedProgram, "shadowTexture"), 5);
+            glUniform1i(glGetUniformLocation(_shadowedProgram, "spotLight.shadowTexture"), 5);
         }
 
         void SetSkybox(const char* posx, const char* negx, const char* posy, const char* negy, const char* posz, const char* negz) {

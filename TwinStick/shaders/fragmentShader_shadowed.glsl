@@ -1,8 +1,14 @@
 #version 330 core
 
-uniform vec3 lightPos;
+struct SpotLight {
+	vec3 pos;
+	vec3 color;
+	float intensity;
+	sampler2DShadow shadowTexture;
+};
+uniform SpotLight spotLight;
+
 uniform float ambientLight;
-uniform sampler2DShadow shadowTexture;
 
 struct Material {
 	vec3 Kd;
@@ -27,20 +33,21 @@ in vec4 spotLightViewPosition;
 out vec4 color;
 
 vec3 CalcSpotLightComponent(vec3 albedo, vec3 specular, vec3 camDir) {
-	vec3 lightDir = normalize(lightPos - viewPosition);
+	vec3 lightDir = normalize(spotLight.pos - viewPosition);
 	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
+	
+	vec3 bounceDir = normalize(lightDir + camDir);
+	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
 
 	vec3 p = spotLightViewPosition.xyz;
 	p.z *= 0.99999;
 	p /= spotLightViewPosition.w;
-	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) { diffuseComponent = 0; }
-	else { diffuseComponent *= texture(shadowTexture, p); }
+	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) { diffuseComponent = 0; specularComponent = 0; }
+	else { diffuseComponent *= texture(spotLight.shadowTexture, p); }
 	
-	vec3 bounceDir = normalize(lightDir + camDir);
-	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
-	
-	//modified blinn-phong
-	return diffuseComponent * (albedo + specular * specularComponent);
+	// blinn-phong
+	vec3 shading = spotLight.color * (diffuseComponent * albedo) + specular * specularComponent;
+	return spotLight.intensity * shading;
 }
 
 void main() {
