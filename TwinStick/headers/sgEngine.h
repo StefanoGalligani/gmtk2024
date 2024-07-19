@@ -9,6 +9,7 @@
 #include <sgCamera3D.h>
 #include <sgSpotLight3D.h>
 #include <sgDirectionalLight3D.h>
+#include <sgAmbientLight.h>
 #include <sgUtils.h>
 #include <sgRenderer.h>
 #include <sgInputManager.h>

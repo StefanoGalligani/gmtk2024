@@ -6,6 +6,7 @@
 #include <sgObject3D.h>
 #include <sgSpotLight3D.h>
 #include <sgDirectionalLight3D.h>
+#include <sgAmbientLight.h>
 #include <sgCamera3D.h>
 #include <sgSkyboxRenderer.h>
 #include <thread>
@@ -28,8 +29,9 @@ namespace sg {
         GLuint _vao;
 
         Camera3D* _mainCamera;
-        SpotLight3D* _spotLight;
-        DirectionalLight3D* _directionalLight;
+        std::vector<SpotLight3D*> _spotLights;
+        std::vector<DirectionalLight3D*> _directionalLights;
+        std::vector<AmbientLight*> _ambientLights;
         std::vector<Object3D*> _objects;
         std::vector<Entity3D*> _entities;
 
@@ -45,8 +47,15 @@ namespace sg {
             for (int i = 0; i < _objects.size(); i++) {
                 _objects[i]->Start();
             }
-            _spotLight->Start();
-            _directionalLight->Start();
+            for (int i = 0; i < _spotLights.size(); i++) {
+                _spotLights[i]->Start();
+            }
+            for (int i = 0; i < _directionalLights.size(); i++) {
+                _directionalLights[i]->Start();
+            }
+            for (int i = 0; i < _ambientLights.size(); i++) {
+                _ambientLights[i]->Start();
+            }
             _mainCamera->Start();
         }
 
@@ -58,8 +67,15 @@ namespace sg {
             for (int i = 0; i < _objects.size(); i++) {
                 _objects[i]->Update(dt);
             }
-            _spotLight->Update(dt);
-            _directionalLight->Update(dt);
+            for (int i = 0; i < _spotLights.size(); i++) {
+                _spotLights[i]->Update(dt);
+            }
+            for (int i = 0; i < _directionalLights.size(); i++) {
+                _directionalLights[i]->Update(dt);
+            }
+            for (int i = 0; i < _ambientLights.size(); i++) {
+                _ambientLights[i]->Update(dt);
+            }
             _mainCamera->Update(dt);
         }
 
@@ -74,36 +90,46 @@ namespace sg {
         }
 
         void UpdateLights() {
-            sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _shadowedProgram);
-            sg::UpdateDirectionalLight(_directionalLight, _mainCamera->GetView(), _shadowedProgram);
-            sg::UpdateSpotLight(_spotLight, _mainCamera->GetView(), _litProgram);
-            sg::UpdateDirectionalLight(_directionalLight, _mainCamera->GetView(), _litProgram);
+            int textureUnit = 3;
+            sg::UpdateSpotLights(_shadowedProgram, _spotLights, _mainCamera->GetView(), textureUnit);
+            sg::UpdateSpotLights(_litProgram, _spotLights, _mainCamera->GetView(), textureUnit);
+
+            textureUnit += _spotLights.size();
+            sg::UpdateDirectionalLights(_shadowedProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
+            sg::UpdateDirectionalLights(_litProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
+
+            sg::UpdateAmbientLights(_shadowedProgram, _ambientLights);
+            sg::UpdateAmbientLights(_litProgram, _ambientLights);
         }
 
         void RenderShadows() {
             glCullFace(GL_FRONT);
 
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLight->GetShadowBuffer().bufferIndex);
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_DEPTH_BUFFER_BIT);
-            glViewport(0, 0, _spotLight->GetShadowWidth(), _spotLight->GetShadowHeight());
+            for (int i = 0; i < _spotLights.size(); i++) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLights[i]->GetShadowBuffer().bufferIndex);
+                glClearColor(0, 0, 0, 0);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                glViewport(0, 0, _spotLights[i]->GetShadowWidth(), _spotLights[i]->GetShadowHeight());
 
-            for (int i = 0; i < _objects.size(); i++) {
-                if (_objects[i]->CastsShadows) {
-                    _objects[i]->Draw(_spotLight->GetViewProjection(), _depthProgram);
+                for (int j = 0; j < _objects.size(); j++) {
+                    if (_objects[j]->CastsShadows) {
+                        _objects[j]->Draw(_spotLights[i]->GetViewProjection(), _depthProgram);
+                    }
                 }
             }
 
             glCullFace(GL_BACK);
 
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLight->GetShadowBuffer().bufferIndex);
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_DEPTH_BUFFER_BIT);
-            glViewport(0, 0, _directionalLight->GetShadowWidth(), _directionalLight->GetShadowHeight());
+            for (int i = 0; i < _directionalLights.size(); i++) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLights[i]->GetShadowBuffer().bufferIndex);
+                glClearColor(0, 0, 0, 0);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                glViewport(0, 0, _directionalLights[i]->GetShadowWidth(), _directionalLights[i]->GetShadowHeight());
 
-            for (int i = 0; i < _objects.size(); i++) {
-                if (_objects[i]->CastsShadows) {
-                    _objects[i]->Draw(_directionalLight->GetViewProjection(), _depthProgram);
+                for (int j = 0; j < _objects.size(); j++) {
+                    if (_objects[j]->CastsShadows) {
+                        _objects[j]->Draw(_directionalLights[i]->GetViewProjection(), _depthProgram);
+                    }
                 }
             }
         }
@@ -144,13 +170,6 @@ namespace sg {
             _height = y;
         }
 
-        void SetAmbientLight(float l) {
-            glUseProgram(_shadowedProgram);
-            glUniform1f(glGetUniformLocation(_shadowedProgram, "ambientLight"), l);
-            glUseProgram(_litProgram);
-            glUniform1f(glGetUniformLocation(_litProgram, "ambientLight"), l);
-        }
-
         void SetShowTriangulation(bool t) {
             _showTriangulation = t;
         }
@@ -178,8 +197,33 @@ namespace sg {
             obj->GetModel()->SetVBO(_vao);
             _objects.push_back(obj);
         }
+        
+        void AddSpotLight(SpotLight3D* light) {
+            _spotLights.push_back(light);
+        }
 
-        void RemoveObject(Object3D *obj) {
+        void AddDirectionalLight(DirectionalLight3D* light) {
+            _directionalLights.push_back(light);
+        }
+
+        void AddAmbientLight(AmbientLight* light) {
+            _ambientLights.push_back(light);
+        }
+
+        void RemoveEntity(Entity3D* ent) {
+            int index = -1;
+            for (int i = 0; i < _entities.size(); i++) {
+                if (_entities[i] == ent) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _entities.erase(std::next(_entities.begin(), index));
+            }
+        }
+
+        void RemoveObject(Object3D* obj) {
             int index = -1;
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i] == obj) {
@@ -191,13 +235,44 @@ namespace sg {
                 _objects.erase(std::next(_objects.begin(), index));
             }
         }
-        
-        void SetSpotLight(SpotLight3D* light) {
-            _spotLight = light;
+
+        void RemoveSpotLight(SpotLight3D* light) {
+            int index = -1;
+            for (int i = 0; i < _spotLights.size(); i++) {
+                if (_spotLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _spotLights.erase(std::next(_spotLights.begin(), index));
+            }
         }
 
-        void SetDirectionalLight(DirectionalLight3D* light) {
-            _directionalLight = light;
+        void RemoveDirectionalLight(DirectionalLight3D* light) {
+            int index = -1;
+            for (int i = 0; i < _directionalLights.size(); i++) {
+                if (_directionalLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _directionalLights.erase(std::next(_directionalLights.begin(), index));
+            }
+        }
+
+        void RemoveAmbientLight(AmbientLight* light) {
+            int index = -1;
+            for (int i = 0; i < _ambientLights.size(); i++) {
+                if (_ambientLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _ambientLights.erase(std::next(_ambientLights.begin(), index));
+            }
         }
 
         void SetMainCamera(Camera3D* camera) {
@@ -210,10 +285,16 @@ namespace sg {
         }
 
         void RemoveAllEntities() {
-            while (_objects.size() > 0)
-                _objects.erase(_objects.begin());
             while (_entities.size() > 0)
                 _entities.erase(_entities.begin());
+            while (_objects.size() > 0)
+                _objects.erase(_objects.begin());
+            while (_spotLights.size() > 0)
+                _spotLights.erase(_spotLights.begin());
+            while (_directionalLights.size() > 0)
+                _directionalLights.erase(_directionalLights.begin());
+            while (_ambientLights.size() > 0)
+                _ambientLights.erase(_ambientLights.begin());
         }
 
         int RenderFrame() {
@@ -234,8 +315,15 @@ namespace sg {
                     if (_objects[i]->ReceivesShadows) {
                         sg::SetMatrix(mv, _shadowedProgram, "mv");
                         sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _shadowedProgram, "mvt");
-                        sg::SetMatrix(_spotLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "spotShadowMatrix");
-                        sg::SetMatrix(_directionalLight->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, "dirShadowMatrix");
+                        for (int j = 0; j < _spotLights.size(); j++) {
+                            std::string str = std::string("spotShadowMatrices[").append(std::to_string(j)).append("]");
+                            sg::SetMatrix(_spotLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, str.c_str());
+                        }
+                        for (int j = 0; j < _directionalLights.size(); j++) {
+                            std::string str = std::string("dirShadowMatrices[").append(std::to_string(j)).append("]");
+                            sg::SetMatrix(_directionalLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, str.c_str());
+                        }
+
                         _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
                     } else {
                         sg::SetMatrix(mv, _litProgram, "mv");

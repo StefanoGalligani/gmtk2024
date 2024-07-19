@@ -140,6 +140,7 @@
     <ClInclude Include="headers\EnemyManager.h" />
     <ClInclude Include="headers\MapCreator.h" />
     <ClInclude Include="headers\Player.h" />
+    <ClInclude Include="headers\sgAmbientLight.h" />
     <ClInclude Include="headers\sgAngledLight3D.h" />
     <ClInclude Include="headers\sgDirectionalLight3D.h" />
     <ClInclude Include="headers\sgEngine.h" />

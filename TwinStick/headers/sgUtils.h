@@ -178,28 +178,49 @@ namespace sg {
         return programID;
     }
 
-    void UpdateSpotLight(sg::SpotLight3D* spotLight, glm::mat4 mv, GLuint program) {
+    void UpdateSpotLights(GLuint program, std::vector<sg::SpotLight3D*> spotLights, glm::mat4 mv, int textureUnit) {
         if (program <= 0) return;
-        glm::vec3 lightPos = glm::vec3(mv * glm::vec4(spotLight->GetGlobalPosition(), 1));
         glUseProgram(program);
-        glUniform3fv(glGetUniformLocation(program, "spotLight.pos"), 1, glm::value_ptr(lightPos));
-        glUniform3fv(glGetUniformLocation(program, "spotLight.color"), 1, glm::value_ptr(spotLight->GetColor()));
-        glUniform1f(glGetUniformLocation(program, "spotLight.intensity"), spotLight->GetIntensity());
-        glActiveTexture(GL_TEXTURE0 + 3);
-        glBindTexture(GL_TEXTURE_2D, spotLight->GetShadowTexture()); //variare se la texture può essere un rettangolo
-        glUniform1i(glGetUniformLocation(program, "spotLight.shadowTexture"), 3);
+        glUniform1i(glGetUniformLocation(program, "nSpotLights"), spotLights.size());
+        for (int i = 0; i < spotLights.size(); i++) {
+            glm::vec3 lightPos = glm::vec3(mv * glm::vec4(spotLights[i]->GetGlobalPosition(), 1));
+            std::string baseString = std::string("spotLights[").append(std::to_string(i)).append("].");
+            glUniform3fv(glGetUniformLocation(program, (baseString + "pos").c_str()), 1, glm::value_ptr(lightPos));
+            glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(spotLights[i]->GetColor()));
+            glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), spotLights[i]->GetIntensity());
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, spotLights[i]->GetShadowTexture()); //variare se la texture può essere un rettangolo
+            glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
+            textureUnit++;
+        }
     }
 
-    void UpdateDirectionalLight(sg::DirectionalLight3D* dirLight, glm::mat4 mv, GLuint program) {
+    void UpdateDirectionalLights(GLuint program, std::vector<sg::DirectionalLight3D*> dirLights, glm::mat4 mv, int textureUnit) {
         if (program <= 0) return;
-        glm::vec3 lightDir = glm::vec3(mv * glm::vec4(dirLight->GlobalForward(), 0));
         glUseProgram(program);
-        glUniform3fv(glGetUniformLocation(program, "dirLight.dir"), 1, glm::value_ptr(lightDir));
-        glUniform3fv(glGetUniformLocation(program, "dirLight.color"), 1, glm::value_ptr(dirLight->GetColor()));
-        glUniform1f(glGetUniformLocation(program, "dirLight.intensity"), dirLight->GetIntensity());
-        glActiveTexture(GL_TEXTURE0 + 4);
-        glBindTexture(GL_TEXTURE_2D, dirLight->GetShadowTexture()); //variare se la texture può essere un rettangolo
-        glUniform1i(glGetUniformLocation(program, "dirLight.shadowTexture"), 4);
+        glUniform1i(glGetUniformLocation(program, "nDirLights"), dirLights.size());
+        for (int i = 0; i < dirLights.size(); i++) {
+            glm::vec3 lightDir = glm::vec3(mv * glm::vec4(dirLights[i]->GlobalForward(), 0));
+            std::string baseString = std::string("dirLights[").append(std::to_string(i)).append("].");
+            glUniform3fv(glGetUniformLocation(program, (baseString + "dir").c_str()), 1, glm::value_ptr(lightDir));
+            glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(dirLights[i]->GetColor()));
+            glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), dirLights[i]->GetIntensity());
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, dirLights[i]->GetShadowTexture()); //variare se la texture può essere un rettangolo
+            glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
+            textureUnit++;
+        }
+    }
+
+    void UpdateAmbientLights(GLuint program, std::vector<sg::AmbientLight*> ambientLights) {
+        if (program <= 0) return;
+        glUseProgram(program);
+        glUniform1i(glGetUniformLocation(program, "nAmbientLights"), ambientLights.size());
+        for (int i = 0; i < ambientLights.size(); i++) {
+            std::string baseString = std::string("ambientLights[").append(std::to_string(i)).append("].");
+            glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(ambientLights[i]->GetColor()));
+            glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), ambientLights[i]->GetIntensity());
+        }
     }
 
     double getCurrentTimeMillis() {

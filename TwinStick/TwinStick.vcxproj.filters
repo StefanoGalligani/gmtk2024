@@ -83,6 +83,9 @@
     <ClInclude Include="headers\sgDirectionalLight3D.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="headers\sgAmbientLight.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertexShader_lit.glsl">

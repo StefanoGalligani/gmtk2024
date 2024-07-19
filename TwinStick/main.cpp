@@ -11,6 +11,7 @@ EnemyManager* enemyManager;
 MapCreator* mapCreator;
 sg::Model* bulletModel;
 sg::DirectionalLight3D* sunLight;
+sg::AmbientLight* ambientLight;
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -68,7 +69,6 @@ private:
     void initGame() {
         BindInputs();
         InitObjects();
-        renderer->SetAmbientLight(0.3f);
     }
 
     void mainLoop() {
@@ -101,6 +101,7 @@ private:
         delete(bulletModel);
         delete(mapCreator);
         delete(sunLight);
+        delete(ambientLight);
     }
 
     void closeApplication() {
@@ -119,7 +120,10 @@ private:
 
         sunLight = new sg::DirectionalLight3D(shadowResx*3, shadowResy*3, 40, 1, 50, 130, glm::vec3(0.1, -0.5, -0.5));
         sunLight->SetIntensity(0.2);
-        renderer->SetDirectionalLight(sunLight);
+        renderer->AddDirectionalLight(sunLight);
+
+        ambientLight = new sg::AmbientLight(0.2f);
+        renderer->AddAmbientLight(ambientLight);
     }
 
 #pragma region input
