@@ -122,7 +122,6 @@ namespace sg {
 
 		void ChangeMaterial(const char* name, Material newMat) {
 			Material* old = GetMaterialByName(name);
-			old->Ka[0] = newMat.Ka[0]; old->Ka[1] = newMat.Ka[1];  old->Ka[2] = newMat.Ka[2];
 			old->Kd[0] = newMat.Kd[0]; old->Kd[1] = newMat.Kd[1];  old->Kd[2] = newMat.Kd[2];
 			old->Ks[0] = newMat.Ks[0]; old->Ks[1] = newMat.Ks[1];  old->Ks[2] = newMat.Ks[2];
 			old->Ke[0] = newMat.Ke[0]; old->Ke[1] = newMat.Ke[1];  old->Ke[2] = newMat.Ke[2];
@@ -132,7 +131,6 @@ namespace sg {
 			old->illum = newMat.illum;
 			old->d = newMat.d;
 			old->Tr = newMat.Tr;
-			old->texture_Ka = newMat.texture_Ka;
 			old->texture_Kd = newMat.texture_Kd;
 			old->texture_Ks = newMat.texture_Ks;
 			old->texture_Ns = newMat.texture_Ns;

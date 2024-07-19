@@ -114,7 +114,6 @@ namespace sg {
 
 	struct Material {
 		char* name;
-		float Ka[3];
 		float Kd[3];
 		float Ks[3];
 		float Ke[3];
@@ -124,7 +123,6 @@ namespace sg {
 		int illum;
 		float d;
 		float Tr;
-		Texture texture_Ka;
 		Texture texture_Kd;
 		Texture texture_Ks;
 		Texture texture_Ns;
@@ -134,7 +132,6 @@ namespace sg {
 
 		sg::Material() {
 			name = NULL;
-			Ka[0] = Ka[1] = Ka[2] = 0;
 			Kd[0] = Kd[1] = Kd[2] = 1;
 			Ks[0] = Ks[1] = Ks[2] = 0;
 			Ke[0] = Ke[1] = Ke[2] = 0;
@@ -144,7 +141,6 @@ namespace sg {
 			illum = 2;
 			d = 1;
 			Tr = 0;
-			texture_Ka = Texture();
 			texture_Kd = Texture();
 			texture_Ks = Texture();
 			texture_Ns = Texture();
@@ -153,9 +149,8 @@ namespace sg {
 			texture_disp = Texture();
 		}
 
-		sg::Material(char* n, float diff[3], float spec[3], float ambient[3], float sharpness, float transp) {
+		sg::Material(char* n, float diff[3], float spec[3], float sharpness, float transp) {
 			name = n;
-			Ka[0] = ambient[0]; Ka[1] = ambient[1]; Ka[2] = ambient[2];
 			Kd[0] = diff[0]; Kd[1] = diff[1]; Kd[2] = diff[2];
 			Ks[0] = spec[0]; Ks[1] = spec[1]; Ks[2] = spec[2];
 			Ke[0] = Ke[1] = Ke[2] = 0;
@@ -165,7 +160,6 @@ namespace sg {
 			illum = 2;
 			d = transp;
 			Tr = 0;
-			texture_Ka = Texture();
 			texture_Kd = Texture();
 			texture_Ks = Texture();
 			texture_Ns = Texture();

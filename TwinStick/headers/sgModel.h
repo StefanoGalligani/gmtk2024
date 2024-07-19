@@ -389,9 +389,6 @@ namespace sg {
 				currentMat = new Material();
 				buffer.DeepCopy(&(currentMat->name), 7);
 			}
-			else if (buffer.IsCommand("Ka")) {
-				buffer.ReadFloat3(currentMat->Ka);
-			}
 			else if (buffer.IsCommand("Kd")) {
 				buffer.ReadFloat3(currentMat->Kd);
 			}
@@ -418,12 +415,6 @@ namespace sg {
 			}
 			else if (buffer.IsCommand("Tr")) {
 				buffer.ReadFloat(&(currentMat->Tr));
-			}
-			else if (buffer.IsCommand("map_Ka")) {
-				Texture t_ka = Texture();
-				Concat(&(t_ka.map), folder, buffer.Data(7));
-				t_ka.isPresent = true;
-				currentMat->texture_Ka = t_ka;
 			}
 			else if (buffer.IsCommand("map_Kd")) {
 				Texture t_kd = Texture();

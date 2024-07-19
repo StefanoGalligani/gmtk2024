@@ -90,7 +90,7 @@ namespace sg {
         }
 
         void UpdateLights() {
-            int textureUnit = 3;
+            int textureUnit = 2;
             sg::UpdateSpotLights(_shadowedProgram, _spotLights, _mainCamera->GetView(), textureUnit);
             sg::UpdateSpotLights(_litProgram, _spotLights, _mainCamera->GetView(), textureUnit);
 

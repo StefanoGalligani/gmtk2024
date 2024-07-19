@@ -27,7 +27,7 @@ int shadowResy = 1024;
 
 #define PLAYER_SPEED 10
 #define ENEMY_SPEED 4
-#define BULLET_SPEED 30
+#define BULLET_SPEED 50
 #define BULLET_LIFETIME 1
 
 class sgGame {
@@ -71,6 +71,18 @@ private:
         InitObjects();
     }
 
+    int averageFrameRate(int newFrameRate) {
+        static std::vector<int> frameRates = std::vector<int>();
+        static int sum = 0;
+        sum += newFrameRate;
+        frameRates.push_back(newFrameRate);
+        if (frameRates.size() > 30) {
+            sum -= frameRates[0];
+            frameRates.erase(frameRates.begin());
+        }
+        return sum / frameRates.size();
+    }
+
     void mainLoop() {
         printf("Starting rendering\n");
         while (!renderer->Terminated())
@@ -83,7 +95,7 @@ private:
 
             int fps = renderer->RenderFrame();
             std::stringstream ss{};
-            ss << "TwinStick [" << fps << " FPS]";
+            ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
             glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
 
             glfwPollEvents();
@@ -119,10 +131,10 @@ private:
         bulletModel->LoadFromObj("res/models/projectile.obj");
 
         sunLight = new sg::DirectionalLight3D(shadowResx*3, shadowResy*3, 40, 1, 50, 130, glm::vec3(0.1, -0.5, -0.5));
-        sunLight->SetIntensity(0.2);
+        sunLight->SetIntensity(0.2f);
         renderer->AddDirectionalLight(sunLight);
 
-        ambientLight = new sg::AmbientLight(0.2f);
+        ambientLight = new sg::AmbientLight(0.1f);
         renderer->AddAmbientLight(ambientLight);
     }
 
