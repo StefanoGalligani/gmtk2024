@@ -99,17 +99,6 @@ namespace sg {
 	}
 
 	inline void Transform::LookAt(glm::vec3 target, glm::vec3 up) {
-		//glm::vec3 targetDir = glm::normalize(target - position);
-		//glm::vec3 rotAxis = glm::normalize(glm::cross(forward, targetDir));
-		//float angle = glm::angle(forward, targetDir);
-		//Rotate(rotAxis, angle);
-
-		//glm::vec3 tempAxis = glm::cross(up, forward);
-		//targetDir = glm::normalize(glm::cross(forward, tempAxis));
-		//rotAxis = glm::normalize(glm::cross(up, targetDir));
-		//angle = glm::angle(up, targetDir);
-		//Rotate(rotAxis, angle);
-
 		forward = glm::normalize(target - position);;
 		glm::vec3 tempAxis = glm::cross(up, forward);
 		this->up = glm::normalize(glm::cross(forward, tempAxis));

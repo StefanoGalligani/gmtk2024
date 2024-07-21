@@ -174,7 +174,12 @@ namespace sg {
 		virtual void ResetLocalRotation() { _localTransform.ResetRotation(); GlobalRotationFromLocal(); }
 
 		virtual void LookAtLocal(glm::vec3 target, glm::vec3 up) { _localTransform.LookAt(target, up); GlobalRotationFromLocal(); }
-		virtual void LookAtLocal(glm::vec3 target) { _localTransform.LookAt(target, glm::vec3(0, 1, 0)); GlobalRotationFromLocal(); }
+		virtual void LookAtLocal(glm::vec3 target) {
+			glm::vec3 up = glm::vec3(0, 1, 0);
+			if (glm::abs(glm::dot(glm::normalize(target - _localTransform.position), up)) > 0.999f) { up = glm::vec3(0, 0, 1); }
+			_localTransform.LookAt(target, up);
+			GlobalRotationFromLocal();
+		}
 
 		virtual void ScaleLocal(float x, float y, float z) { _localTransform.Scale(x, y, z); GlobalScaleFromLocal(); }
 		virtual void ScaleLocal(glm::vec3 scale) { _localTransform.Scale(scale); GlobalScaleFromLocal(); }
@@ -208,7 +213,12 @@ namespace sg {
 		virtual void ResetGlobalRotation() { _globalTransform.ResetRotation(); LocalRotationFromGlobal(); }
 
 		virtual void LookAtGlobal(glm::vec3 target, glm::vec3 up) { _globalTransform.LookAt(target, up); LocalRotationFromGlobal(); }
-		virtual void LookAtGlobal(glm::vec3 target) { _globalTransform.LookAt(target, glm::vec3(0, 1, 0)); LocalRotationFromGlobal(); }
+		virtual void LookAtGlobal(glm::vec3 target) {
+			glm::vec3 up = glm::vec3(0, 1, 0);
+			if (glm::abs(glm::dot(glm::normalize(target - _globalTransform.position), up)) > 0.999f) { up = glm::vec3(0, 0, 1); }
+			_globalTransform.LookAt(target, up);
+			LocalRotationFromGlobal();
+		}
 
 		virtual void ScaleGlobal(float x, float y, float z) { _globalTransform.Scale(x, y, z); LocalScaleFromGlobal(); }
 		virtual void ScaleGlobal(glm::vec3 scale) { _globalTransform.Scale(scale); LocalScaleFromGlobal(); }
