@@ -3,14 +3,13 @@
 #include <glm/glm/gtx/transform.hpp>
 #include <sgView3D.h>
 #include <sgStructures.h>
+#include <sgLight.h>
 
 namespace sg {
-	class AngledLight3D : public View3D {
+	class AngledLight3D : public View3D, public Light {
 	private:
 		glm::mat4 _shadowMatrix;
 		sg::FrameBuffer *_depthBuffer;
-		glm::vec3 _color;
-		float _intensity;
 		int _shadowWidth;
 		int _shadowHeight;
 
@@ -23,8 +22,6 @@ namespace sg {
 	public:
 		AngledLight3D(int width, int height, float fov, float aspectRatio, float nearPlane, float farPlane) : View3D(fov, aspectRatio, nearPlane, farPlane) {
 			_shadowMatrix = glm::mat4(1);
-			_color = glm::vec3(1);
-			_intensity = 1;
 			_depthBuffer = new sg::FrameBuffer(width, height, false, true, false, false);
 			_shadowWidth = width;
 			_shadowHeight = height;
@@ -32,22 +29,6 @@ namespace sg {
 
 		GLuint GetShadowTexture() {
 			return _depthBuffer->depthMap;
-		}
-
-		void SetColor(glm::vec3 color) {
-			_color = color;
-		}
-
-		glm::vec3 GetColor() const {
-			return _color;
-		}
-
-		void SetIntensity(float intensity) {
-			_intensity = intensity;
-		}
-
-		float GetIntensity() const {
-			return _intensity;
 		}
 
 		sg::FrameBuffer GetShadowBuffer() const {

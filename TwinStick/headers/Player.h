@@ -38,7 +38,7 @@ public:
 
 		renderer->AddObject(_playerObj);
 		renderer->SetMainCamera(_mainCamera);
-		renderer->AddSpotLight(_spotLight);
+		renderer->AddLight(_spotLight);
 		renderer->AddEntity(this);
 	}
 

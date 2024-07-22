@@ -102,6 +102,45 @@ namespace sg {
             sg::UpdateAmbientLights(_litProgram, _ambientLights);
         }
 
+        void RemoveSpotLight(SpotLight3D* light) {
+            int index = -1;
+            for (int i = 0; i < _spotLights.size(); i++) {
+                if (_spotLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _spotLights.erase(std::next(_spotLights.begin(), index));
+            }
+        }
+
+        void RemoveDirectionalLight(DirectionalLight3D* light) {
+            int index = -1;
+            for (int i = 0; i < _directionalLights.size(); i++) {
+                if (_directionalLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _directionalLights.erase(std::next(_directionalLights.begin(), index));
+            }
+        }
+
+        void RemoveAmbientLight(AmbientLight* light) {
+            int index = -1;
+            for (int i = 0; i < _ambientLights.size(); i++) {
+                if (_ambientLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _ambientLights.erase(std::next(_ambientLights.begin(), index));
+            }
+        }
+
         void RenderShadows() {
             glCullFace(GL_FRONT);
 
@@ -197,17 +236,25 @@ namespace sg {
             obj->GetModel()->SetVBO(_vao);
             _objects.push_back(obj);
         }
-        
-        void AddSpotLight(SpotLight3D* light) {
-            _spotLights.push_back(light);
-        }
 
-        void AddDirectionalLight(DirectionalLight3D* light) {
-            _directionalLights.push_back(light);
-        }
-
-        void AddAmbientLight(AmbientLight* light) {
-            _ambientLights.push_back(light);
+        void AddLight(Light* light) {
+            switch (light->GetLightType()) {
+            case TypeAmbientLight:
+                _ambientLights.push_back(static_cast<AmbientLight*>(light));
+                break;
+            case TypeDirectionalLight:
+                _directionalLights.push_back(static_cast<DirectionalLight3D*>(light));
+                break;
+            case TypeSpotLight:
+                _spotLights.push_back(static_cast<SpotLight3D*>(light));
+                break;
+            case TypePointLight:
+                //_pointLights.push_back(static_cast<PointLight3D*>(light));
+                break;
+            default:
+                printf("Error: tried to add light of unspecified type");
+                break;
+            }
         }
 
         void RemoveEntity(Entity3D* ent) {
@@ -236,42 +283,23 @@ namespace sg {
             }
         }
 
-        void RemoveSpotLight(SpotLight3D* light) {
-            int index = -1;
-            for (int i = 0; i < _spotLights.size(); i++) {
-                if (_spotLights[i] == light) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index >= 0) {
-                _spotLights.erase(std::next(_spotLights.begin(), index));
-            }
-        }
-
-        void RemoveDirectionalLight(DirectionalLight3D* light) {
-            int index = -1;
-            for (int i = 0; i < _directionalLights.size(); i++) {
-                if (_directionalLights[i] == light) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index >= 0) {
-                _directionalLights.erase(std::next(_directionalLights.begin(), index));
-            }
-        }
-
-        void RemoveAmbientLight(AmbientLight* light) {
-            int index = -1;
-            for (int i = 0; i < _ambientLights.size(); i++) {
-                if (_ambientLights[i] == light) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index >= 0) {
-                _ambientLights.erase(std::next(_ambientLights.begin(), index));
+        void RemoveLight(Light* light) {
+            switch (light->GetLightType()) {
+            case TypeAmbientLight:
+                RemoveAmbientLight(static_cast<AmbientLight*>(light));
+                break;
+            case TypeDirectionalLight:
+                RemoveDirectionalLight(static_cast<DirectionalLight3D*>(light));
+                break;
+            case TypeSpotLight:
+                RemoveSpotLight(static_cast<SpotLight3D*>(light));
+                break;
+            case TypePointLight:
+                //RemovePointLight(static_cast<PointLight3D*>(light));
+                break;
+            default:
+                printf("Error: tried to remove light of unspecified type");
+                return;
             }
         }
 

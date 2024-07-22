@@ -146,6 +146,7 @@
     <ClInclude Include="headers\sgEngine.h" />
     <ClInclude Include="headers\sgEntity3D.h" />
     <ClInclude Include="headers\sgInputManager.h" />
+    <ClInclude Include="headers\sgLight.h" />
     <ClInclude Include="headers\sgRenderer.h" />
     <ClInclude Include="headers\sgCamera3D.h" />
     <ClInclude Include="headers\sgModel.h" />

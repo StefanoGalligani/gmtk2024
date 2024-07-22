@@ -25,6 +25,7 @@ namespace sg {
 			UpdateProjectionMatrix();
 			_direction = glm::normalize(direction);
 			_distance = distance;
+			_lightType = TypeDirectionalLight;
 			UpdateCoords();
 		}
 
