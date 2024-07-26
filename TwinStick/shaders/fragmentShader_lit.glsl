@@ -40,6 +40,7 @@ uniform Material material;
 in vec3 viewPosition;
 in vec2 textureC;
 in vec3 fragNormal;
+in vec4 spotLightViewPositions[MAX_LIGHTS];
 
 out vec4 color;
 
@@ -49,7 +50,12 @@ vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	
 	vec3 bounceDir = normalize(lightDir + camDir);
 	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
-	
+
+	vec3 p = spotLightViewPositions[i].xyz / spotLightViewPositions[i].w;
+	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) {
+		diffuseComponent = 0; specularComponent = 0;
+	}
+
 	// blinn-phong
 	vec3 shading = spotLights[i].color * (diffuseComponent * albedo) + specular * specularComponent;
 	return spotLights[i].intensity * shading;

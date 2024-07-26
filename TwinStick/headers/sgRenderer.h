@@ -142,7 +142,7 @@ namespace sg {
         }
 
         void RenderShadows() {
-            glCullFace(GL_FRONT);
+            //glCullFace(GL_FRONT);
 
             for (int i = 0; i < _spotLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLights[i]->GetShadowBuffer().bufferIndex);
@@ -157,7 +157,7 @@ namespace sg {
                 }
             }
 
-            glCullFace(GL_BACK);
+            //glCullFace(GL_BACK);
 
             for (int i = 0; i < _directionalLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLights[i]->GetShadowBuffer().bufferIndex);
@@ -339,25 +339,20 @@ namespace sg {
 
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {
+                    GLuint program = _objects[i]->ReceivesShadows ? _shadowedProgram : _litProgram;
                     glm::mat4 mv = _mainCamera->GetView() * _objects[i]->GetModelMatrix();
-                    if (_objects[i]->ReceivesShadows) {
-                        sg::SetMatrix(mv, _shadowedProgram, "mv");
-                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _shadowedProgram, "mvt");
-                        for (int j = 0; j < _spotLights.size(); j++) {
-                            std::string str = std::string("spotShadowMatrices[").append(std::to_string(j)).append("]");
-                            sg::SetMatrix(_spotLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, str.c_str());
-                        }
-                        for (int j = 0; j < _directionalLights.size(); j++) {
-                            std::string str = std::string("dirShadowMatrices[").append(std::to_string(j)).append("]");
-                            sg::SetMatrix(_directionalLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), _shadowedProgram, str.c_str());
-                        }
-
-                        _objects[i]->Draw(_mainCamera->GetViewProjection(), _shadowedProgram);
-                    } else {
-                        sg::SetMatrix(mv, _litProgram, "mv");
-                        sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), _litProgram, "mvt");
-                        _objects[i]->Draw(_mainCamera->GetViewProjection(), _litProgram);
+                    sg::SetMatrix(mv, program, "mv");
+                    sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), program, "mvt");
+                    for (int j = 0; j < _spotLights.size(); j++) {
+                        std::string str = std::string("spotShadowMatrices[").append(std::to_string(j)).append("]");
+                        sg::SetMatrix(_spotLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), program, str.c_str());
                     }
+                    for (int j = 0; j < _directionalLights.size(); j++) {
+                        std::string str = std::string("dirShadowMatrices[").append(std::to_string(j)).append("]");
+                        sg::SetMatrix(_directionalLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), program, str.c_str());
+                    }
+
+                    _objects[i]->Draw(_mainCamera->GetViewProjection(), program);
                 } else {
                     _objects[i]->Draw(_mainCamera->GetViewProjection(), _unlitProgram);
                 }

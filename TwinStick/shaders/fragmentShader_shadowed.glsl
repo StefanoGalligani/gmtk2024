@@ -55,7 +55,7 @@ vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
 
 	vec3 p = spotLightViewPositions[i].xyz;
-	//p.z *= 0.99999;
+	p.z *= 0.99999;
 	p /= spotLightViewPositions[i].w;
 	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) {
 		diffuseComponent = 0; specularComponent = 0;
