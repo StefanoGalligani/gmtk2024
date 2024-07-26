@@ -6,6 +6,7 @@ namespace sg {
 	class SpotLight3D : public AngledLight3D {
 	private:
 		bool _orthogonal;
+		float _range;
 
 	protected:
 		void UpdateProjectionMatrix() override {
@@ -18,7 +19,16 @@ namespace sg {
 			: AngledLight3D(width, height, fov, aspectRatio, nearPlane, farPlane) {
 			_orthogonal = orthogonal;
 			_lightType = TypeSpotLight;
+			_range = farPlane;
 			UpdateProjectionMatrix();
+		}
+
+		void SetRange(float range) {
+			_range = range;
+		}
+
+		float GetRange() {
+			return _range;
 		}
 	};
 }

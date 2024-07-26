@@ -23,10 +23,10 @@ public:
 		_playerObj->ReceivesShadows = true;
 		_playerObj->PerformFrustumCheck = false;
 
-		_spotLight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 100.0f);
+		_spotLight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 30.0f);
 		_spotLight->SetGlobalPosition(glm::vec3(0.2f, 1.18f, -1.27f));
 		_spotLight->SetColor(glm::vec3(1.0, 1.0, 0.8));
-		_spotLight->SetIntensity(1);
+		_spotLight->SetIntensity(2);
 
 		_mainCamera = new sg::Camera3D(1.5f, (float)resx / resy, 0.05f, 3000.0f);
 		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 5));

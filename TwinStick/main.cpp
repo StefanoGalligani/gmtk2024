@@ -131,7 +131,7 @@ private:
         bulletModel->LoadFromObj("res/models/projectile.obj");
 
         sunLight = new sg::DirectionalLight3D(shadowResx*2, shadowResy*2, 35, 1, 50, 130, glm::vec3(0.1, -0.5, -0.5));
-        sunLight->SetIntensity(0.16f);
+        sunLight->SetIntensity(0.2f);
         renderer->AddLight(sunLight);
 
         ambientLight = new sg::AmbientLight(0.12f);

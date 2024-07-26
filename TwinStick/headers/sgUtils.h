@@ -187,6 +187,7 @@ namespace sg {
             std::string baseString = std::string("spotLights[").append(std::to_string(i)).append("].");
             glUniform3fv(glGetUniformLocation(program, (baseString + "pos").c_str()), 1, glm::value_ptr(lightPos));
             glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(spotLights[i]->GetColor()));
+            glUniform1f(glGetUniformLocation(program, (baseString + "range").c_str()), spotLights[i]->GetRange());
             glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), spotLights[i]->GetIntensity());
             glActiveTexture(GL_TEXTURE0 + textureUnit);
             glBindTexture(GL_TEXTURE_2D, spotLights[i]->GetShadowTexture()); //variare se la texture può essere un rettangolo

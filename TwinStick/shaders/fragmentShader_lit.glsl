@@ -6,6 +6,7 @@ struct SpotLight {
 	vec3 pos;
 	vec3 color;
 	float intensity;
+	float range;
 };
 uniform SpotLight spotLights[MAX_LIGHTS];
 uniform int nSpotLights;
@@ -45,7 +46,8 @@ in vec4 spotLightViewPositions[MAX_LIGHTS];
 out vec4 color;
 
 vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
-	vec3 lightDir = normalize(spotLights[i].pos - viewPosition);
+	vec3 toLight = spotLights[i].pos - viewPosition;
+	vec3 lightDir = normalize(toLight);
 	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
 	
 	vec3 bounceDir = normalize(lightDir + camDir);
@@ -54,6 +56,10 @@ vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	vec3 p = spotLightViewPositions[i].xyz / spotLightViewPositions[i].w;
 	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) {
 		diffuseComponent = 0; specularComponent = 0;
+	} else {
+		float coefficient = max(0., (1 - length(toLight) / spotLights[i].range));
+		diffuseComponent *= coefficient;
+		specularComponent *= coefficient;
 	}
 
 	// blinn-phong
