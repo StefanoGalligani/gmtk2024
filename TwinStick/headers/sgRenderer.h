@@ -142,8 +142,6 @@ namespace sg {
         }
 
         void RenderShadows() {
-            //glCullFace(GL_FRONT);
-
             for (int i = 0; i < _spotLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLights[i]->GetShadowBuffer().bufferIndex);
                 glClearColor(0, 0, 0, 0);
@@ -152,12 +150,10 @@ namespace sg {
 
                 for (int j = 0; j < _objects.size(); j++) {
                     if (_objects[j]->CastsShadows) {
-                        _objects[j]->Draw(_spotLights[i]->GetViewProjection(), _depthProgram);
+                        _objects[j]->Draw(_depthProgram, _spotLights[i]->GetViewProjection(), _spotLights[i]->GetFrustum());
                     }
                 }
             }
-
-            //glCullFace(GL_BACK);
 
             for (int i = 0; i < _directionalLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLights[i]->GetShadowBuffer().bufferIndex);
@@ -167,7 +163,7 @@ namespace sg {
 
                 for (int j = 0; j < _objects.size(); j++) {
                     if (_objects[j]->CastsShadows) {
-                        _objects[j]->Draw(_directionalLights[i]->GetViewProjection(), _depthProgram);
+                        _objects[j]->Draw(_depthProgram, _directionalLights[i]->GetViewProjection(), _directionalLights[i]->GetFrustum());
                     }
                 }
             }
@@ -352,15 +348,15 @@ namespace sg {
                         sg::SetMatrix(_directionalLights[j]->GetShadow() * _objects[i]->GetModelMatrix(), program, str.c_str());
                     }
 
-                    _objects[i]->Draw(_mainCamera->GetViewProjection(), program);
+                    _objects[i]->Draw(program, _mainCamera->GetViewProjection(), _mainCamera->GetFrustum());
                 } else {
-                    _objects[i]->Draw(_mainCamera->GetViewProjection(), _unlitProgram);
+                    _objects[i]->Draw(_unlitProgram, _mainCamera->GetViewProjection(), _mainCamera->GetFrustum());
                 }
             }
 
             if (_showTriangulation) {
                 for (int i = 0; i < _objects.size(); i++) {
-                    _objects[i]->Draw(_mainCamera->GetViewProjection(), _triangulationProgram);
+                    _objects[i]->Draw(_triangulationProgram, _mainCamera->GetViewProjection(), _mainCamera->GetFrustum());
                 }
             }
 

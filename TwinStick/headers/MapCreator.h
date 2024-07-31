@@ -95,11 +95,11 @@ public:
         renderer->AddObject(_siloObj2);
 
         _treeModel->LoadFromObj("res/models/tree.obj");
-        GenerateTrees(10, glm::vec3(-40, 0, -30), glm::vec3(-10, 0, -20));
-        GenerateTrees(10, glm::vec3(10, 0, -30), glm::vec3(40, 0, -20));
-        GenerateTrees(10, glm::vec3(-40, 0, 17), glm::vec3(-30, 0, 40));
-        GenerateTrees(15, glm::vec3(30, 0, -20), glm::vec3(40, 0, 40));
-        GenerateTrees(15, glm::vec3(-27, 0, 40), glm::vec3(27, 0, 43));
+        GenerateTrees(10, glm::vec3(-40, 0, -30), glm::vec3(-13, 0, -23));
+        GenerateTrees(10, glm::vec3(13, 0, -30), glm::vec3(40, 0, -23));
+        GenerateTrees(10, glm::vec3(-40, 0, 15), glm::vec3(-32, 0, 40));
+        GenerateTrees(15, glm::vec3(30, 0, -30), glm::vec3(40, 0, 40));
+        GenerateTrees(15, glm::vec3(-25, 0, 40), glm::vec3(25, 0, 43));
 
         PlaceLamps();
 	}

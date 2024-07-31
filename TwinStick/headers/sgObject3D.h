@@ -13,31 +13,36 @@ namespace sg {
 		glm::mat4 _modelMatrix;
 		bool _copiedModel;
 
-		bool FrustumCheck(glm::mat4 mvp) {
-			glm::vec3 points[8];
-			glm::vec3 offset = glm::vec3(0.05, 0.05, 0.05);
-			points[0] = _model3D->GetBoundingBoxLower() - offset;
-			points[7] = _model3D->GetBoundingBoxUpper() + offset;
-			glm::vec3 lower = glm::vec3(2, 2, 2);
-			glm::vec3 upper = glm::vec3(-2, -2, -2);
-			for (int i = 1; i < 7; i++) {
-				points[i] = glm::vec3(points[7 * ((i / 4) % 2)].x, points[7 * ((i / 2) % 2)].y, points[7 * (i % 2)].z);
-			}
-			for (int i = 0; i < 8; i++) {
-				glm::vec4 v = mvp * glm::vec4(points[i], 1);
-				v.x = v.x / v.w; v.y = v.y / v.w; v.z = v.z / v.w;
-				if (v.x < lower.x) lower.x = v.x;
-				if (v.y < lower.y) lower.y = v.y;
-				if (v.z < lower.z) lower.z = v.z;
-				if (v.x > upper.x) upper.x = v.x;
-				if (v.y > upper.y) upper.y = v.y;
-				if (v.z > upper.z) upper.z = v.z;
-			}
-			if (lower.x > 1 || lower.y > 1 || lower.z > 1 || upper.x < -1 || upper.y < -1 || upper.z < -1) {
-				//printf("Model not rendered: %s\n", _model3D->GetMeshAt(0).name);
-				return false;
-			}
-			return true;
+		bool FrustumCheck(sg::Frustum frustum) {
+			glm::vec3 center = _model3D->GetBoundingBoxCenter();
+			glm::vec3 extents = _model3D->GetBoundingBoxUpper() - center;
+
+			//Get global scale thanks to our transformdd
+			const glm::vec3 globalCenter{ _modelMatrix * glm::vec4(center, 1.f) };
+
+			// Scaled orientation
+			const glm::vec3 right = LocalRight() * extents.x;
+			const glm::vec3 up = LocalUp() * extents.y;
+			const glm::vec3 forward = LocalForward() * extents.z;
+
+			const float newIi = std::abs(right.x) + std::abs(up.x) + std::abs(forward.x);
+			const float newIj = std::abs(right.y) + std::abs(up.y) + std::abs(forward.y);
+			const float newIk = std::abs(right.z) + std::abs(up.z) + std::abs(forward.z);
+
+			glm::vec3 globalExtents = {newIi, newIj, newIk};
+			return (isOnOrForwardPlane(frustum.leftFace, globalCenter, globalExtents) &&
+				isOnOrForwardPlane(frustum.rightFace, globalCenter, globalExtents) &&
+				isOnOrForwardPlane(frustum.topFace, globalCenter, globalExtents) &&
+				isOnOrForwardPlane(frustum.bottomFace, globalCenter, globalExtents) &&
+				isOnOrForwardPlane(frustum.nearFace, globalCenter, globalExtents) &&
+				isOnOrForwardPlane(frustum.farFace, globalCenter, globalExtents));
+		}
+
+		bool isOnOrForwardPlane(const Plane& plane, glm::vec3 center, glm::vec3 extents) const
+		{
+			// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+			const float r = glm::dot(extents, glm::abs(plane.normal));
+			return -r <= glm::dot(plane.normal, center) - plane.distance;
 		}
 
 		void CopyMaterialsFromModel() {
@@ -147,10 +152,10 @@ namespace sg {
 			return _model3D;
 		}
 
-		void Draw(glm::mat4 vp, GLuint program) {
+		void Draw(GLuint program, glm::mat4 vp, sg::Frustum frustum) {
 			BuildModelMatrix();
 			glm::mat4 mvp = vp * _modelMatrix;
-			if (!PerformFrustumCheck || FrustumCheck(mvp)) {
+			if (!PerformFrustumCheck || FrustumCheck(frustum)) {
 				glUseProgram(program);
 				glUniformMatrix4fv(glGetUniformLocation(program, "mvp"), 1, false, glm::value_ptr(mvp));
 

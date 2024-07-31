@@ -21,7 +21,6 @@ public:
 		_playerObj->Lit = true;
 		_playerObj->CastsShadows = true;
 		_playerObj->ReceivesShadows = true;
-		_playerObj->PerformFrustumCheck = false;
 
 		_spotLight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 30.0f);
 		_spotLight->SetGlobalPosition(glm::vec3(0.2f, 1.18f, -1.27f));

@@ -193,6 +193,33 @@ namespace sg {
 		}
 	};
 
+	struct Plane
+	{
+		glm::vec3 normal = { 0.f, 1.f, 0.f };
+		float distance = 0.f;
+
+		Plane(glm::vec3 point, glm::vec3 normal) {
+			this->normal = normal;
+			this->distance = glm::dot(normal, point);
+		}
+
+		Plane() {}
+	};
+
+	struct Frustum
+	{
+		Plane topFace;
+		Plane bottomFace;
+
+		Plane rightFace;
+		Plane leftFace;
+
+		Plane farFace;
+		Plane nearFace;
+
+		Frustum() {}
+	};
+
 	struct Polar {
 		double anglex;
 		double angley;

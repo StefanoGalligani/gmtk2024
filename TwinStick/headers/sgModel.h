@@ -77,7 +77,7 @@ namespace sg {
 		}
 
 	private:
-		void ClearData() { delete(_vertices); delete(_meshes); delete(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(); _upperBound = glm::vec3(); }
+		void ClearData() { delete(_vertices); delete(_meshes); delete(_materials); _nVertices = 0; ; _nMaterials = 0; _nMeshes = 0; _lowerBound = glm::vec3(5000000); _upperBound = glm::vec3(-5000000); }
 		bool ReadMaterial(char const* folder, char const* filename);
 		void SeparateFolderFromFilename(char** folder, char const** filename) {
 			int lastDiv = -1;
