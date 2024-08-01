@@ -7,6 +7,7 @@
 #include <sgSpotLight3D.h>
 #include <sgDirectionalLight3D.h>
 #include <sgAmbientLight.h>
+#include <sgPointLight3D.h>
 #include <sgCamera3D.h>
 #include <sgSkyboxRenderer.h>
 #include <thread>
@@ -31,6 +32,7 @@ namespace sg {
         Camera3D* _mainCamera;
         std::vector<SpotLight3D*> _spotLights;
         std::vector<DirectionalLight3D*> _directionalLights;
+        std::vector<PointLight3D*> _pointLights;
         std::vector<AmbientLight*> _ambientLights;
         std::vector<Object3D*> _objects;
         std::vector<Entity3D*> _entities;
@@ -98,6 +100,10 @@ namespace sg {
             sg::UpdateDirectionalLights(_shadowedProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
             sg::UpdateDirectionalLights(_litProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
 
+            textureUnit += _directionalLights.size();
+            sg::UpdatePointLights(_shadowedProgram, _pointLights, _mainCamera->GetView(), textureUnit);
+            sg::UpdatePointLights(_litProgram, _pointLights, _mainCamera->GetView(), textureUnit);
+
             sg::UpdateAmbientLights(_shadowedProgram, _ambientLights);
             sg::UpdateAmbientLights(_litProgram, _ambientLights);
         }
@@ -125,6 +131,19 @@ namespace sg {
             }
             if (index >= 0) {
                 _directionalLights.erase(std::next(_directionalLights.begin(), index));
+            }
+        }
+
+        void RemovePointLight(PointLight3D* light) {
+            int index = -1;
+            for (int i = 0; i < _spotLights.size(); i++) {
+                if (_pointLights[i] == light) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index >= 0) {
+                _pointLights.erase(std::next(_pointLights.begin(), index));
             }
         }
 
@@ -245,10 +264,10 @@ namespace sg {
                 _spotLights.push_back(static_cast<SpotLight3D*>(light));
                 break;
             case TypePointLight:
-                //_pointLights.push_back(static_cast<PointLight3D*>(light));
+                _pointLights.push_back(static_cast<PointLight3D*>(light));
                 break;
             default:
-                printf("Error: tried to add light of unspecified type");
+                printf("Error: tried to add light of unspecified type\n");
                 break;
             }
         }
@@ -291,10 +310,10 @@ namespace sg {
                 RemoveSpotLight(static_cast<SpotLight3D*>(light));
                 break;
             case TypePointLight:
-                //RemovePointLight(static_cast<PointLight3D*>(light));
+                RemovePointLight(static_cast<PointLight3D*>(light));
                 break;
             default:
-                printf("Error: tried to remove light of unspecified type");
+                printf("Error: tried to remove light of unspecified type\n");
                 return;
             }
         }
@@ -315,6 +334,8 @@ namespace sg {
                 _objects.erase(_objects.begin());
             while (_spotLights.size() > 0)
                 _spotLights.erase(_spotLights.begin());
+            while (_pointLights.size() > 0)
+                _pointLights.erase(_pointLights.begin());
             while (_directionalLights.size() > 0)
                 _directionalLights.erase(_directionalLights.begin());
             while (_ambientLights.size() > 0)

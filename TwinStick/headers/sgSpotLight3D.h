@@ -15,9 +15,9 @@ namespace sg {
 		}
 
 	public:
-		SpotLight3D(int width, int height, float fov, float aspectRatio, float nearPlane, float farPlane, bool orthogonal = false)
+		SpotLight3D(int width, int height, float fov, float aspectRatio, float nearPlane, float farPlane, bool orthographic = false)
 			: AngledLight3D(width, height, fov, aspectRatio, nearPlane, farPlane) {
-			_orthographic = orthogonal;
+			_orthographic = orthographic;
 			_lightType = TypeSpotLight;
 			_range = farPlane;
 			UpdateProjectionMatrix();

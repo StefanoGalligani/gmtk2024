@@ -15,7 +15,7 @@ private:
     sg::Object3D* _siloObj2;
 
     std::vector<sg::Object3D*> _lampObjs;
-    std::vector<sg::SpotLight3D*> _lampLights;
+    std::vector<sg::PointLight3D*> _lampLights;
 
     std::vector<sg::Object3D*> _trees;
 
@@ -45,11 +45,10 @@ private:
                 lampObj->CastsShadows = true;
                 lampObj->ReceivesShadows = true;
 
-                sg::SpotLight3D* lampLight = new sg::SpotLight3D(1024, 1024, 3.14159f/2, 1, 0.05, 20);
+                sg::PointLight3D* lampLight = new sg::PointLight3D(1024, 1024, 0.05, 20);
                 lampLight->SetIntensity(2);
                 lampLight->SetColor(glm::vec3(1, 0.6f, 0));
                 lampLight->SetLocalPosition(glm::vec3(0, 9.85f, 0));
-                lampLight->LookAtLocal(glm::vec3(0, 0, 0));
                 lampObj->AddChild(lampLight, true);
 
                 _lampObjs.push_back(lampObj);

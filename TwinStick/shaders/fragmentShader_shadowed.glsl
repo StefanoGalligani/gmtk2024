@@ -12,6 +12,16 @@ struct SpotLight {
 uniform SpotLight spotLights[MAX_LIGHTS];
 uniform int nSpotLights;
 
+struct PointLight {
+	vec3 pos;
+	vec3 color;
+	float intensity;
+	float range;
+	samplerCubeShadow shadowTexture;
+};
+uniform PointLight pointLights[MAX_LIGHTS];
+uniform int nPointLights;
+
 struct DirLight {
 	vec3 dir;
 	vec3 color;
@@ -73,6 +83,23 @@ vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	return spotLights[i].intensity * shading;
 }
 
+vec3 CalcPointLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
+	vec3 toLight = pointLights[i].pos - viewPosition;
+	vec3 lightDir = normalize(toLight);
+	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
+	
+	vec3 bounceDir = normalize(lightDir + camDir);
+	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
+
+	float coefficient = max(0., (1 - length(toLight) / pointLights[i].range));
+	diffuseComponent *= coefficient;
+	specularComponent *= coefficient;
+
+	// blinn-phong
+	vec3 shading = pointLights[i].color * (diffuseComponent * albedo) + specular * specularComponent;
+	return pointLights[i].intensity * shading;
+}
+
 vec3 CalcDirLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	vec3 lightDir = normalize(-dirLights[i].dir);
 	float diffuseComponent = max(0, dot(lightDir, normalize(fragNormal)));
@@ -108,6 +135,9 @@ void main() {
 	vec3 shading = vec3(0.);
 	for(int i=0; i<nSpotLights; i++) {
 		shading += CalcSpotLightComponent(i, albedo, specular, camDir);
+	}
+	for(int i=0; i<nPointLights; i++) {
+		shading += CalcPointLightComponent(i, albedo, specular, camDir);
 	}
 	for(int i=0; i<nDirLights; i++) {
 		shading += CalcDirLightComponent(i, albedo, specular, camDir);

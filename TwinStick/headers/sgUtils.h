@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <glm/glm/gtc/type_ptr.hpp>
+#include <sgSpotLight3D.h>
+#include <sgPointLight3D.h>
 #include <sgDirectionalLight3D.h>
 
 namespace sg {
@@ -192,6 +194,25 @@ namespace sg {
             glActiveTexture(GL_TEXTURE0 + textureUnit);
             glBindTexture(GL_TEXTURE_2D, spotLights[i]->GetShadowTexture()); //variare se la texture può essere un rettangolo
             glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
+            textureUnit++;
+        }
+    }
+
+
+    void UpdatePointLights(GLuint program, std::vector<sg::PointLight3D*> pointLights, glm::mat4 mv, int textureUnit) {
+        if (program <= 0) return;
+        glUseProgram(program);
+        glUniform1i(glGetUniformLocation(program, "nPointLights"), pointLights.size());
+        for (int i = 0; i < pointLights.size(); i++) {
+            glm::vec3 lightPos = glm::vec3(mv * glm::vec4(pointLights[i]->GetGlobalPosition(), 1));
+            std::string baseString = std::string("pointLights[").append(std::to_string(i)).append("].");
+            glUniform3fv(glGetUniformLocation(program, (baseString + "pos").c_str()), 1, glm::value_ptr(lightPos));
+            glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(pointLights[i]->GetColor()));
+            glUniform1f(glGetUniformLocation(program, (baseString + "range").c_str()), pointLights[i]->GetRange());
+            glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), pointLights[i]->GetIntensity());
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            //glBindTexture(GL_TEXTURE_2D, pointLights[i]->GetShadowTexture());
+            //glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
             textureUnit++;
         }
     }
