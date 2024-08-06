@@ -14,10 +14,12 @@ uniform int nSpotLights;
 
 struct PointLight {
 	vec3 pos;
+	vec3 worldPos;
 	vec3 color;
 	float intensity;
 	float range;
-	samplerCubeShadow shadowTexture;
+	samplerCube shadowTexture;
+	float far_plane;
 };
 uniform PointLight pointLights[MAX_LIGHTS];
 uniform int nPointLights;
@@ -50,6 +52,7 @@ struct Material {
 };  
 uniform Material material;
 
+in vec3 worldPosition;
 in vec3 viewPosition;
 in vec2 textureC;
 in vec3 fragNormal;
@@ -91,9 +94,17 @@ vec3 CalcPointLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	vec3 bounceDir = normalize(lightDir + camDir);
 	float specularComponent = pow(max(0, dot(bounceDir, fragNormal)), material.Ns);
 
-	float coefficient = max(0., (1 - length(toLight) / pointLights[i].range));
-	diffuseComponent *= coefficient;
-	specularComponent *= coefficient;
+	vec3 toLightWorld = pointLights[i].worldPos - worldPosition;
+	float sampledDistance = texture(pointLights[i].shadowTexture, -toLightWorld).x;
+	sampledDistance *= pointLights[i].far_plane;
+	bool inShadow = (length(toLightWorld) - sampledDistance) >= 0.01;
+	if (inShadow) {
+		diffuseComponent = 0; specularComponent = 0;
+	} else {
+		float coefficient = max(0., (1 - length(toLightWorld) / pointLights[i].range));
+		diffuseComponent *= coefficient;
+		specularComponent *= coefficient;
+	}
 
 	// blinn-phong
 	vec3 shading = pointLights[i].color * (diffuseComponent * albedo) + specular * specularComponent;

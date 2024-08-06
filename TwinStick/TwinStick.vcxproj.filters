@@ -160,5 +160,11 @@
     <None Include="shaders\tessellationEvaluationShader_normalMapping.glsl">
       <Filter>File di risorse</Filter>
     </None>
+    <None Include="shaders\fragmentShader_depth_linear.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="shaders\vertexShader_depth_linear.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
   </ItemGroup>
 </Project>

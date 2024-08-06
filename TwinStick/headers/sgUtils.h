@@ -198,7 +198,6 @@ namespace sg {
         }
     }
 
-
     void UpdatePointLights(GLuint program, std::vector<sg::PointLight3D*> pointLights, glm::mat4 mv, int textureUnit) {
         if (program <= 0) return;
         glUseProgram(program);
@@ -207,12 +206,14 @@ namespace sg {
             glm::vec3 lightPos = glm::vec3(mv * glm::vec4(pointLights[i]->GetGlobalPosition(), 1));
             std::string baseString = std::string("pointLights[").append(std::to_string(i)).append("].");
             glUniform3fv(glGetUniformLocation(program, (baseString + "pos").c_str()), 1, glm::value_ptr(lightPos));
+            glUniform3fv(glGetUniformLocation(program, (baseString + "worldPos").c_str()), 1, glm::value_ptr(pointLights[i]->GetGlobalPosition()));
             glUniform3fv(glGetUniformLocation(program, (baseString + "color").c_str()), 1, glm::value_ptr(pointLights[i]->GetColor()));
             glUniform1f(glGetUniformLocation(program, (baseString + "range").c_str()), pointLights[i]->GetRange());
             glUniform1f(glGetUniformLocation(program, (baseString + "intensity").c_str()), pointLights[i]->GetIntensity());
+            glUniform1f(glGetUniformLocation(program, (baseString + "far_plane").c_str()), pointLights[i]->GetFarPlane());
             glActiveTexture(GL_TEXTURE0 + textureUnit);
-            //glBindTexture(GL_TEXTURE_2D, pointLights[i]->GetShadowTexture());
-            //glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, pointLights[i]->GetShadowTexture());
+            glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
             textureUnit++;
         }
     }

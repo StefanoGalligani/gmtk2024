@@ -164,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragmentShader_depth.glsl" />
+    <None Include="shaders\fragmentShader_depth_linear.glsl" />
     <None Include="shaders\fragmentShader_lit.glsl" />
     <None Include="shaders\fragmentShader_background.glsl" />
     <None Include="shaders\fragmentShader_normalmapping.glsl" />
@@ -177,6 +178,7 @@
     <None Include="shaders\tessellationEvaluationShader_normalMapping.glsl" />
     <None Include="shaders\tessellationEvaluationShader_quad.glsl" />
     <None Include="shaders\vertexShader_depth.glsl" />
+    <None Include="shaders\vertexShader_depth_linear.glsl" />
     <None Include="shaders\vertexShader_lit.glsl" />
     <None Include="shaders\vertexShader_background.glsl" />
     <None Include="shaders\vertexShader_normalmapping.glsl" />

@@ -50,7 +50,7 @@ namespace sg {
 				float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 				glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureType, depthMap, 0);
 			}
 			if (createDepthBuffer) {
 				hasDepth = true;
@@ -71,6 +71,81 @@ namespace sg {
 			}
 
 			this->isValid = (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+		}
+	};
+
+	struct FrameBufferCube {
+		GLuint bufferIndex = 0;
+		bool hasTexture = false;
+		GLuint renderTexture = 0;
+		bool hasDepthMap = false;
+		GLuint depthMap = 0;
+		bool hasDepth = false;
+		GLuint depthBuffer = 0;
+		bool isValid = false;
+
+		sg::FrameBufferCube(float res, bool createTexture = true, bool createDepthMap = false, bool createDepthBuffer = true) {
+			glGenFramebuffers(1, &bufferIndex);
+			glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+
+			if (createTexture) {
+				hasTexture = true;
+				glGenTextures(1, &renderTexture);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_CUBE_MAP, renderTexture);
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, res, res, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+				}
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY, 5);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+			}
+			if (createDepthMap) {
+				hasDepthMap = true;
+				glGenTextures(1, &depthMap);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_CUBE_MAP, depthMap);
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT32F, res, res, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+				}
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+				for (int i = 0; i < 6; i++) {
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, depthMap, 0);
+				}
+			}
+			if (createDepthBuffer) {
+				hasDepth = true;
+				glGenRenderbuffers(1, &depthBuffer);
+				glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, res, res);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP, depthBuffer);
+			}
+
+			if (hasTexture) {
+				GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+				glDrawBuffers(1, drawBuffers);
+			}
+			else {
+				glDrawBuffer(GL_NONE);
+				glReadBuffer(GL_NONE);
+			}
+
+			GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			this->isValid = (status == GL_FRAMEBUFFER_COMPLETE);
 		}
 	};
 
@@ -200,7 +275,7 @@ namespace sg {
 
 		Plane(glm::vec3 point, glm::vec3 normal) {
 			this->normal = normal;
-			this->distance = glm::dot(normal, point);
+			this->distance = glm::dot(this->normal, point);
 		}
 
 		Plane() {}

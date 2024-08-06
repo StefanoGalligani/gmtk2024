@@ -17,6 +17,7 @@ namespace sg {
     private:
         GLuint _shadowedProgram;
         GLuint _depthProgram;
+        GLuint _depthLinearProgram;
         GLuint _unlitProgram;
         GLuint _litProgram;
         GLuint _triangulationProgram;
@@ -161,9 +162,10 @@ namespace sg {
         }
 
         void RenderShadows() {
+            glUseProgram(_depthProgram);
+
             for (int i = 0; i < _spotLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLights[i]->GetShadowBuffer().bufferIndex);
-                glClearColor(0, 0, 0, 0);
                 glClear(GL_DEPTH_BUFFER_BIT);
                 glViewport(0, 0, _spotLights[i]->GetShadowWidth(), _spotLights[i]->GetShadowHeight());
 
@@ -176,13 +178,33 @@ namespace sg {
 
             for (int i = 0; i < _directionalLights.size(); i++) {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLights[i]->GetShadowBuffer().bufferIndex);
-                glClearColor(0, 0, 0, 0);
                 glClear(GL_DEPTH_BUFFER_BIT);
                 glViewport(0, 0, _directionalLights[i]->GetShadowWidth(), _directionalLights[i]->GetShadowHeight());
 
                 for (int j = 0; j < _objects.size(); j++) {
                     if (_objects[j]->CastsShadows) {
                         _objects[j]->Draw(_depthProgram, _directionalLights[i]->GetViewProjection(), _directionalLights[i]->GetFrustum());
+                    }
+                }
+            }
+
+            glUseProgram(_depthLinearProgram);
+
+            for (int i = 0; i < _pointLights.size(); i++) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _pointLights[i]->GetShadowBuffer().bufferIndex);
+                for (int face = 0; face < 6; face++) {
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _pointLights[i]->GetShadowTexture(), 0);
+                    glClear(GL_DEPTH_BUFFER_BIT);
+                    glViewport(0, 0, _pointLights[i]->GetShadowWidth(), _pointLights[i]->GetShadowHeight());
+
+                    glUniform3fv(glGetUniformLocation(_depthLinearProgram, "lightPos"), 1, glm::value_ptr(_pointLights[i]->GetGlobalPosition()));
+                    glUniform1f(glGetUniformLocation(_depthLinearProgram, "far_plane"), _pointLights[i]->GetFarPlane());
+
+                    for (int j = 0; j < _objects.size(); j++) {
+                        if (_objects[j]->CastsShadows) {
+                            glUniformMatrix4fv(glGetUniformLocation(_depthLinearProgram, "model"), 1, false, glm::value_ptr(_objects[j]->GetModelMatrix()));
+                            _objects[j]->Draw(_depthLinearProgram, _pointLights[i]->GetViewProjection(face), _pointLights[i]->GetFrustum(face));
+                        }
                     }
                 }
             }
@@ -212,6 +234,7 @@ namespace sg {
 
             _shadowedProgram = sg::CreateProgram("shaders/vertexShader_shadowed.glsl", "shaders/fragmentShader_shadowed.glsl");
             _depthProgram = sg::CreateProgram("shaders/vertexShader_depth.glsl", "shaders/fragmentShader_depth.glsl");
+            _depthLinearProgram = sg::CreateProgram("shaders/vertexShader_depth_linear.glsl", "shaders/fragmentShader_depth_linear.glsl");
             _unlitProgram = sg::CreateProgram("shaders/vertexShader_unlit.glsl", "shaders/fragmentShader_unlit.glsl");
             _litProgram = sg::CreateProgram("shaders/vertexShader_lit.glsl", "shaders/fragmentShader_lit.glsl");
             _triangulationProgram = sg::CreateProgram("shaders/vertexShader_triangulation.glsl", "shaders/fragmentShader_triangulation.glsl", "shaders/geometryShader_triangulation.glsl");
@@ -359,6 +382,7 @@ namespace sg {
                     GLuint program = _objects[i]->ReceivesShadows ? _shadowedProgram : _litProgram;
                     glm::mat4 mv = _mainCamera->GetView() * _objects[i]->GetModelMatrix();
                     sg::SetMatrix(mv, program, "mv");
+                    sg::SetMatrix(_objects[i]->GetModelMatrix(), program, "modelMat");
                     sg::SetMatrix(glm::transpose(glm::inverse(glm::mat3(mv))), program, "mvt");
                     for (int j = 0; j < _spotLights.size(); j++) {
                         std::string str = std::string("spotShadowMatrices[").append(std::to_string(j)).append("]");

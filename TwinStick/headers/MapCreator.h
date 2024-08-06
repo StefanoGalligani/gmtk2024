@@ -45,7 +45,7 @@ private:
                 lampObj->CastsShadows = true;
                 lampObj->ReceivesShadows = true;
 
-                sg::PointLight3D* lampLight = new sg::PointLight3D(1024, 1024, 0.05, 20);
+                sg::PointLight3D* lampLight = new sg::PointLight3D(512, 0.05, 20);
                 lampLight->SetIntensity(2);
                 lampLight->SetColor(glm::vec3(1, 0.6f, 0));
                 lampLight->SetLocalPosition(glm::vec3(0, 9.85f, 0));
