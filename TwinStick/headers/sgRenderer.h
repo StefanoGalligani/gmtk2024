@@ -37,6 +37,7 @@ namespace sg {
         std::vector<AmbientLight*> _ambientLights;
         std::vector<Object3D*> _objects;
         std::vector<Entity3D*> _entities;
+        int _pointLightIndex = 0;
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
@@ -190,23 +191,24 @@ namespace sg {
 
             glUseProgram(_depthLinearProgram);
 
-            for (int i = 0; i < _pointLights.size(); i++) {
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _pointLights[i]->GetShadowBuffer().bufferIndex);
+            if (_pointLights.size() > 0) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _pointLights[_pointLightIndex]->GetShadowBuffer().bufferIndex);
                 for (int face = 0; face < 6; face++) {
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _pointLights[i]->GetShadowTexture(), 0);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _pointLights[_pointLightIndex]->GetShadowTexture(), 0);
                     glClear(GL_DEPTH_BUFFER_BIT);
-                    glViewport(0, 0, _pointLights[i]->GetShadowWidth(), _pointLights[i]->GetShadowHeight());
+                    glViewport(0, 0, _pointLights[_pointLightIndex]->GetShadowWidth(), _pointLights[_pointLightIndex]->GetShadowHeight());
 
-                    glUniform3fv(glGetUniformLocation(_depthLinearProgram, "lightPos"), 1, glm::value_ptr(_pointLights[i]->GetGlobalPosition()));
-                    glUniform1f(glGetUniformLocation(_depthLinearProgram, "far_plane"), _pointLights[i]->GetFarPlane());
+                    glUniform3fv(glGetUniformLocation(_depthLinearProgram, "lightPos"), 1, glm::value_ptr(_pointLights[_pointLightIndex]->GetGlobalPosition()));
+                    glUniform1f(glGetUniformLocation(_depthLinearProgram, "far_plane"), _pointLights[_pointLightIndex]->GetFarPlane());
 
                     for (int j = 0; j < _objects.size(); j++) {
                         if (_objects[j]->CastsShadows) {
                             glUniformMatrix4fv(glGetUniformLocation(_depthLinearProgram, "model"), 1, false, glm::value_ptr(_objects[j]->GetModelMatrix()));
-                            _objects[j]->Draw(_depthLinearProgram, _pointLights[i]->GetViewProjection(face), _pointLights[i]->GetFrustum(face));
+                            _objects[j]->Draw(_depthLinearProgram, _pointLights[_pointLightIndex]->GetViewProjection(face), _pointLights[_pointLightIndex]->GetFrustum(face));
                         }
                     }
                 }
+                _pointLightIndex = (_pointLightIndex + 1) % _pointLights.size();
             }
         }
 

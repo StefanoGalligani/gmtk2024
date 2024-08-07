@@ -85,6 +85,7 @@ private:
 
     void mainLoop() {
         printf("Starting rendering\n");
+        float previousPlayerZ = player->GetGlobalPosition().z - 15;
         while (!renderer->Terminated())
         {
             if (checkGameOver()) {
@@ -92,6 +93,9 @@ private:
                 renderer->RemoveAllEntities();
                 initGame();
             }
+            float newPlayerZ = player->GetGlobalPosition().z - 15;
+            if (previousPlayerZ * newPlayerZ < 0) mapCreator->SwapLights();
+            previousPlayerZ = newPlayerZ;
 
             int fps = renderer->RenderFrame();
             std::stringstream ss{};

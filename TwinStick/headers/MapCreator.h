@@ -16,6 +16,7 @@ private:
 
     std::vector<sg::Object3D*> _lampObjs;
     std::vector<sg::PointLight3D*> _lampLights;
+    bool _topLightsInScene;
 
     std::vector<sg::Object3D*> _trees;
 
@@ -54,9 +55,12 @@ private:
                 _lampObjs.push_back(lampObj);
                 _lampLights.push_back(lampLight);
                 _renderer->AddObject(lampObj);
-                _renderer->AddLight(lampLight);
+                if (j == 0) {
+                    _renderer->AddLight(lampLight);
+                }
             }
         }
+        _topLightsInScene = true;
     }
 
 public:
@@ -102,6 +106,21 @@ public:
 
         PlaceLamps();
 	}
+
+    void SwapLights() {
+        if (_topLightsInScene) {
+            _renderer->RemoveLight(_lampLights[0]);
+            _renderer->RemoveLight(_lampLights[2]);
+            _renderer->AddLight(_lampLights[1]);
+            _renderer->AddLight(_lampLights[3]);
+        } else {
+            _renderer->RemoveLight(_lampLights[1]);
+            _renderer->RemoveLight(_lampLights[3]);
+            _renderer->AddLight(_lampLights[0]);
+            _renderer->AddLight(_lampLights[2]);
+        }
+        _topLightsInScene = !_topLightsInScene;
+    }
 
 	~MapCreator() {
         delete(_mapObj);
