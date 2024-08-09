@@ -116,6 +116,7 @@ namespace sg {
 		}
 
 		~PointLight3D() {
+			_depthCubeBuffer->FreeTextures();
 			delete(_depthCubeBuffer);
 		}
 	};

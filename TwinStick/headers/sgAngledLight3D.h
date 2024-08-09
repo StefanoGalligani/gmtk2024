@@ -38,6 +38,7 @@ namespace sg {
 		}
 
 		~AngledLight3D() {
+			_depthBuffer->FreeTextures();
 			delete(_depthBuffer);
 		}
 	};

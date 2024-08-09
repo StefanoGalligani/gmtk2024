@@ -72,6 +72,21 @@ namespace sg {
 
 			this->isValid = (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 		}
+
+		void FreeTextures() {
+			if (hasTexture) {
+				glDeleteTextures(1, &renderTexture);
+				hasTexture = false;
+			}
+			if (hasDepthMap) {
+				glDeleteTextures(1, &depthMap);
+				hasDepthMap = false;
+			}
+			if (hasDepth) {
+				glDeleteTextures(1, &depthBuffer);
+				hasDepth = false;
+			}
+		}
 	};
 
 	struct FrameBufferCube {
@@ -146,6 +161,21 @@ namespace sg {
 
 			GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			this->isValid = (status == GL_FRAMEBUFFER_COMPLETE);
+		}
+
+		void FreeTextures() {
+			if (hasTexture) {
+				glDeleteTextures(1, &renderTexture);
+				hasTexture = false;
+			}
+			if (hasDepthMap) {
+				glDeleteTextures(1, &depthMap);
+				hasDepthMap = false;
+			}
+			if (hasDepth) {
+				glDeleteTextures(1, &depthBuffer);
+				hasDepth = false;
+			}
 		}
 	};
 
