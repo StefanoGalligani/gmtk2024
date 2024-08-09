@@ -138,7 +138,7 @@ namespace sg {
 
         void RemovePointLight(PointLight3D* light) {
             int index = -1;
-            for (int i = 0; i < _spotLights.size(); i++) {
+            for (int i = 0; i < _pointLights.size(); i++) {
                 if (_pointLights[i] == light) {
                     index = i;
                     break;
@@ -146,6 +146,7 @@ namespace sg {
             }
             if (index >= 0) {
                 _pointLights.erase(std::next(_pointLights.begin(), index));
+                if (_pointLightIndex >= _pointLights.size()) _pointLightIndex = 0;
             }
         }
 
@@ -365,6 +366,7 @@ namespace sg {
                 _directionalLights.erase(_directionalLights.begin());
             while (_ambientLights.size() > 0)
                 _ambientLights.erase(_ambientLights.begin());
+            _pointLightIndex = 0;
         }
 
         int RenderFrame() {

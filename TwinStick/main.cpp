@@ -12,6 +12,8 @@ MapCreator* mapCreator;
 sg::Model* bulletModel;
 sg::DirectionalLight3D* sunLight;
 sg::AmbientLight* ambientLight;
+sg::PointLight3D* shootLight;
+int shootLightPresent = 0;
 
 bool showTriangulation = false;
 bool pressedCTRL = false;
@@ -90,7 +92,6 @@ private:
         {
             if (checkGameOver()) {
                 cleanup();
-                renderer->RemoveAllEntities();
                 initGame();
             }
             float newPlayerZ = player->GetGlobalPosition().z - 15;
@@ -101,6 +102,10 @@ private:
             std::stringstream ss{};
             ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
             glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
+
+            if (shootLightPresent > 0 && --shootLightPresent == 0) {
+                renderer->RemoveLight(shootLight);
+            }
 
             glfwPollEvents();
         }
@@ -118,6 +123,9 @@ private:
         delete(mapCreator);
         delete(sunLight);
         delete(ambientLight);
+        delete(shootLight);
+        shootLightPresent = 0;
+        renderer->RemoveAllEntities();
     }
 
     void closeApplication() {
@@ -140,6 +148,10 @@ private:
 
         ambientLight = new sg::AmbientLight(0.12f);
         renderer->AddLight(ambientLight);
+
+        shootLight = new sg::PointLight3D(128, 0.05, 50);
+        shootLight->SetColor(glm::vec3(1, 0.2, 0.2));
+        shootLight->SetIntensity(10);
     }
 
 #pragma region input
@@ -203,6 +215,10 @@ private:
             bulletModel
         );
         renderer->AddObject(bullet);
+
+        shootLight->SetGlobalPosition(player->GetGlobalPosition() + player->GetDirection() * 1.4f + glm::vec3(0, 1.4571, 0));
+        if (shootLightPresent == 0) renderer->AddLight(shootLight);
+        shootLightPresent = 2;
     }
 
     static void onLeftMouseButtonRelease(int mods) {
