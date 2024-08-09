@@ -7,6 +7,7 @@ namespace sg {
 	private:
 		bool _orthographic;
 		float _range;
+		sg::Texture _mapTexture;
 
 	protected:
 		void UpdateProjectionMatrix() override {
@@ -21,6 +22,17 @@ namespace sg {
 			_lightType = TypeSpotLight;
 			_range = farPlane;
 			UpdateProjectionMatrix();
+		}
+
+		void SetMapTexture(const char* filename) {
+			_mapTexture.map = (char*)filename;
+			_mapTexture.index = sg::TextureManager::Instance()->SetTexture(filename);
+			_mapTexture.isPresent = true;
+			_mapTexture.isLoaded = true;
+		}
+
+		sg::Texture GetMapTexture() {
+			return _mapTexture;
 		}
 
 		void SetRange(float range) {

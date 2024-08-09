@@ -1,6 +1,6 @@
 #version 330 core
 
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 5
 
 uniform mat4 mvp;
 uniform mat4 mv;

@@ -1,12 +1,14 @@
 #version 330 core
 
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 5
 
 struct SpotLight {
 	vec3 pos;
 	vec3 color;
 	float intensity;
 	float range;
+	sampler2D mapTexture;
+	int mapTextureSet;
 };
 uniform SpotLight spotLights[MAX_LIGHTS];
 uniform int nSpotLights;
@@ -66,7 +68,9 @@ vec3 CalcSpotLightComponent(int i, vec3 albedo, vec3 specular, vec3 camDir) {
 	if (p.x > 1 || p.x < 0 || p.y > 1 || p.y < 0 || p.z > 1.0 || p.z < 0.0) {
 		diffuseComponent = 0; specularComponent = 0;
 	} else {
-		float coefficient = max(0., (1 - length(toLight) / spotLights[i].range));
+		float litValue = 1.;
+		if (spotLights[i].mapTextureSet == 1) litValue *= texture(spotLights[i].mapTexture, p.xy).x;
+		float coefficient = litValue * max(0., (1 - length(toLight) / spotLights[i].range));
 		diffuseComponent *= coefficient;
 		specularComponent *= coefficient;
 	}

@@ -95,16 +95,16 @@ namespace sg {
 
         void UpdateLights() {
             int textureUnit = 2;
-            sg::UpdateSpotLights(_shadowedProgram, _spotLights, _mainCamera->GetView(), textureUnit);
-            sg::UpdateSpotLights(_litProgram, _spotLights, _mainCamera->GetView(), textureUnit);
-
-            textureUnit += _spotLights.size();
             sg::UpdateDirectionalLights(_shadowedProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
             sg::UpdateDirectionalLights(_litProgram, _directionalLights, _mainCamera->GetView(), textureUnit);
 
             textureUnit += _directionalLights.size();
             sg::UpdatePointLights(_shadowedProgram, _pointLights, _mainCamera->GetView(), textureUnit);
             sg::UpdatePointLights(_litProgram, _pointLights, _mainCamera->GetView(), textureUnit);
+
+            textureUnit += _pointLights.size();
+            sg::UpdateSpotLights(_shadowedProgram, _spotLights, _mainCamera->GetView(), textureUnit);
+            sg::UpdateSpotLights(_litProgram, _spotLights, _mainCamera->GetView(), textureUnit);
 
             sg::UpdateAmbientLights(_shadowedProgram, _ambientLights);
             sg::UpdateAmbientLights(_litProgram, _ambientLights);

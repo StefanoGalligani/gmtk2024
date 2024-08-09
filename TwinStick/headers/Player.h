@@ -26,6 +26,7 @@ public:
 		_spotLight->SetGlobalPosition(glm::vec3(0.2f, 1.18f, -1.27f));
 		_spotLight->SetColor(glm::vec3(1.0, 1.0, 0.8));
 		_spotLight->SetIntensity(2);
+		_spotLight->SetMapTexture("res/lightMask.jpg");
 
 		_mainCamera = new sg::Camera3D(1.5f, (float)resx / resy, 0.05f, 3000.0f);
 		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 5));

@@ -195,6 +195,13 @@ namespace sg {
             glBindTexture(GL_TEXTURE_2D, spotLights[i]->GetShadowTexture()); //variare se la texture può essere un rettangolo
             glUniform1i(glGetUniformLocation(program, (baseString + "shadowTexture").c_str()), textureUnit);
             textureUnit++;
+            if (spotLights[i]->GetMapTexture().isPresent) {
+                glActiveTexture(GL_TEXTURE0 + textureUnit);
+                glBindTexture(GL_TEXTURE_2D, spotLights[i]->GetMapTexture().index); //variare se la texture può essere un rettangolo
+                glUniform1i(glGetUniformLocation(program, (baseString + "mapTexture").c_str()), textureUnit);
+                glUniform1i(glGetUniformLocation(program, (baseString + "mapTextureSet").c_str()), 1);
+                textureUnit++;
+            }
         }
     }
 
