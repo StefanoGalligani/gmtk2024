@@ -25,10 +25,7 @@ namespace sg {
 		}
 
 		void SetMapTexture(const char* filename) {
-			_mapTexture.map = (char*)filename;
-			_mapTexture.index = sg::TextureManager::Instance()->SetTexture(filename);
-			_mapTexture.isPresent = true;
-			_mapTexture.isLoaded = true;
+			_mapTexture = sg::TextureManager::Instance()->LoadTexture(filename);
 		}
 
 		sg::Texture GetMapTexture() {

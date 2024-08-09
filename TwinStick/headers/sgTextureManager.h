@@ -49,7 +49,6 @@ namespace sg {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         }
 
-    public:
         GLuint SetTexture(const char* filename) {
             int width, height, nrChannels;
             unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, STBI_rgb_alpha);
@@ -65,30 +64,30 @@ namespace sg {
             return texture;
         }
 
+    public:
+        sg::Texture LoadTexture(const char* filename) {
+            sg::Texture t;
+            t.map = (char *)filename;
+            GLuint index = CheckIfAlreadyLoaded(filename);
+            bool wasPresent = index != -1;
+            if (!wasPresent) {
+                index = SetTexture(filename);
+            }
+            t.index = index;
+            t.isLoaded = true;
+            t.isPresent = true;
+            if (!wasPresent) {
+                _loadedTextures.push_back(t);
+            }
+            return t;
+        }
+
         void SetTexturesData(sg::Material* mat) {
             if (mat->texture_Kd.isPresent && !mat->texture_Kd.isLoaded) {
-                GLuint index = CheckIfAlreadyLoaded(mat->texture_Kd.map);
-                bool wasPresent = index != -1;
-                if (!wasPresent) {
-                    index = SetTexture(mat->texture_Kd.map);
-                }
-                mat->texture_Kd.index = index;
-                mat->texture_Kd.isLoaded = true;
-                if (!wasPresent) {
-                    _loadedTextures.push_back(mat->texture_Kd);
-                }
+                mat->texture_Kd = LoadTexture(mat->texture_Kd.map);
             }
             if (mat->texture_Ks.isPresent && !mat->texture_Ks.isLoaded) {
-                GLuint index = CheckIfAlreadyLoaded(mat->texture_Ks.map);
-                bool wasPresent = index != -1;
-                if (!wasPresent) {
-                    index = SetTexture(mat->texture_Ks.map);
-                }
-                mat->texture_Ks.index = index;
-                mat->texture_Ks.isLoaded = true;
-                if (!wasPresent) {
-                    _loadedTextures.push_back(mat->texture_Ks);
-                }
+                mat->texture_Ks = LoadTexture(mat->texture_Ks.map);
             }
         }
 
@@ -164,6 +163,12 @@ namespace sg {
 
             glUniform1i(glGetUniformLocation(programId, "material.dTextureSet"), 0);
             glUniform1i(glGetUniformLocation(programId, "material.sTextureSet"), 0);
+        }
+
+        ~TextureManager() {
+            for (int i = 0; i < _loadedTextures.size(); i++) {
+                glDeleteTextures(1, &_loadedTextures[i].index);
+            }
         }
 	};
 
