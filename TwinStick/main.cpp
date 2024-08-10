@@ -218,7 +218,7 @@ private:
 
         shootLight->SetGlobalPosition(player->GetGlobalPosition() + player->GetDirection() * 1.4f + glm::vec3(0, 1.4571, 0));
         if (shootLightPresent == 0) renderer->AddLight(shootLight);
-        shootLightPresent = 2;
+        shootLightPresent = 1;
     }
 
     static void onLeftMouseButtonRelease(int mods) {

@@ -16,7 +16,7 @@ namespace sg {
 
 	protected:
 		void UpdateProjectionMatrix() override {
-			SetOrthogonal();
+			SetOrthographic();
 		}
 
 	public:

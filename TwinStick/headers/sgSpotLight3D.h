@@ -11,7 +11,7 @@ namespace sg {
 
 	protected:
 		void UpdateProjectionMatrix() override {
-			if (_orthographic) SetOrthogonal();
+			if (_orthographic) SetOrthographic();
 			else SetPerspective();
 		}
 

@@ -51,10 +51,14 @@ namespace sg {
 			}
 		}
 
+		void UpdateBoundingBox() {
+			SetBoundingBox(GetGlobalPosition(), glm::vec3(_farPlane, _farPlane, _farPlane) / 2.0f);
+		}
+
 	protected:
 
-		void LocalPositionFromGlobal(bool updateChildren = true) override { Entity3D::LocalPositionFromGlobal(updateChildren); UpdateViewMatrices(); }
-		void GlobalPositionFromLocal(bool updateChildren = true) override { Entity3D::GlobalPositionFromLocal(updateChildren); UpdateViewMatrices(); }
+		void LocalPositionFromGlobal(bool updateChildren = true) override { Entity3D::LocalPositionFromGlobal(updateChildren); UpdateViewMatrices(); UpdateBoundingBox(); }
+		void GlobalPositionFromLocal(bool updateChildren = true) override { Entity3D::GlobalPositionFromLocal(updateChildren); UpdateViewMatrices(); UpdateBoundingBox(); }
 
 	public:
 		PointLight3D(int resolution, float nearPlane, float farPlane) : Entity3D() {
@@ -89,6 +93,7 @@ namespace sg {
 		void SetFarPlane(float farPlane) {
 			_farPlane = farPlane;
 			UpdateProjectionMatrix();
+			UpdateBoundingBox();
 		}
 
 		float GetNearPlane() {

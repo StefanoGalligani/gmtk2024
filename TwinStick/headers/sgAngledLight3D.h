@@ -11,10 +11,42 @@ namespace sg {
 		glm::mat4 _shadowMatrix;
 		sg::FrameBuffer *_depthBuffer;
 
+		void SetBoundingBox() {
+			const float farPlane = GetFarPlane();
+			const float nearPlane = GetNearPlane();
+			const float fov = GetFov();
+			const float aspectRatio = GetAspectRatio();
+
+			glm::vec3 center = GetGlobalPosition() + GlobalForward() * (farPlane + nearPlane) / 2.0f;
+			glm::vec3 localExtents;
+			localExtents.z = (farPlane - nearPlane) / 2.0f;
+
+			const float halfVSide = IsOrthographic() ? 2 * fov : farPlane * tanf(fov * .5f);
+			const float halfHSide = halfVSide * aspectRatio;
+
+			localExtents.x = halfHSide;
+			localExtents.y = halfVSide;
+
+			Light::SetBoundingBox(center, LocalToGlobalExtents(localExtents));
+		}
+
+		glm::vec3 LocalToGlobalExtents(glm::vec3 localExtents) {
+			const glm::vec3 right = LocalRight() * localExtents.x;
+			const glm::vec3 up = LocalUp() * localExtents.y;
+			const glm::vec3 forward = LocalForward() * localExtents.z;
+
+			const float newIi = std::abs(right.x) + std::abs(up.x) + std::abs(forward.x);
+			const float newIj = std::abs(right.y) + std::abs(up.y) + std::abs(forward.y);
+			const float newIk = std::abs(right.z) + std::abs(up.z) + std::abs(forward.z);
+
+			return { newIi, newIj, newIk };
+		}
+
 	protected:
 		void UpdateView() override {
 			View3D::UpdateView();
 			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
+			SetBoundingBox();
 		}
 
 	public:

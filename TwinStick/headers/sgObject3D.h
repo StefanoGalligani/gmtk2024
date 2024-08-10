@@ -17,7 +17,7 @@ namespace sg {
 			glm::vec3 center = _model3D->GetBoundingBoxCenter();
 			glm::vec3 extents = _model3D->GetBoundingBoxUpper() - center;
 
-			//Get global scale thanks to our transformdd
+			//Get global scale thanks to our transform
 			const glm::vec3 globalCenter{ _modelMatrix * glm::vec4(center, 1.f) };
 
 			// Scaled orientation

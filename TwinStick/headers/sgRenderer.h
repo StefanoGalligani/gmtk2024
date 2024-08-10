@@ -37,7 +37,6 @@ namespace sg {
         std::vector<AmbientLight*> _ambientLights;
         std::vector<Object3D*> _objects;
         std::vector<Entity3D*> _entities;
-        int _pointLightIndex = 0;
 
         double _timestep = 1000.0 / 40;
         int _tessellationLevel = 1;
@@ -146,7 +145,6 @@ namespace sg {
             }
             if (index >= 0) {
                 _pointLights.erase(std::next(_pointLights.begin(), index));
-                if (_pointLightIndex >= _pointLights.size()) _pointLightIndex = 0;
             }
         }
 
@@ -167,6 +165,7 @@ namespace sg {
             glUseProgram(_depthProgram);
 
             for (int i = 0; i < _spotLights.size(); i++) {
+                if (!_spotLights[i]->FrustumCheck(_mainCamera->GetFrustum())) continue;
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _spotLights[i]->GetShadowBuffer().bufferIndex);
                 glClear(GL_DEPTH_BUFFER_BIT);
                 glViewport(0, 0, _spotLights[i]->GetShadowWidth(), _spotLights[i]->GetShadowHeight());
@@ -179,6 +178,7 @@ namespace sg {
             }
 
             for (int i = 0; i < _directionalLights.size(); i++) {
+                if (!_directionalLights[i]->FrustumCheck(_mainCamera->GetFrustum())) continue;
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _directionalLights[i]->GetShadowBuffer().bufferIndex);
                 glClear(GL_DEPTH_BUFFER_BIT);
                 glViewport(0, 0, _directionalLights[i]->GetShadowWidth(), _directionalLights[i]->GetShadowHeight());
@@ -192,24 +192,24 @@ namespace sg {
 
             glUseProgram(_depthLinearProgram);
 
-            if (_pointLights.size() > 0) {
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _pointLights[_pointLightIndex]->GetShadowBuffer().bufferIndex);
+            for (int i = 0; i < _pointLights.size(); i++) {
+                if (!_pointLights[i]->FrustumCheck(_mainCamera->GetFrustum())) continue;
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _pointLights[i]->GetShadowBuffer().bufferIndex);
                 for (int face = 0; face < 6; face++) {
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _pointLights[_pointLightIndex]->GetShadowTexture(), 0);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _pointLights[i]->GetShadowTexture(), 0);
                     glClear(GL_DEPTH_BUFFER_BIT);
-                    glViewport(0, 0, _pointLights[_pointLightIndex]->GetShadowWidth(), _pointLights[_pointLightIndex]->GetShadowHeight());
+                    glViewport(0, 0, _pointLights[i]->GetShadowWidth(), _pointLights[i]->GetShadowHeight());
 
-                    glUniform3fv(glGetUniformLocation(_depthLinearProgram, "lightPos"), 1, glm::value_ptr(_pointLights[_pointLightIndex]->GetGlobalPosition()));
-                    glUniform1f(glGetUniformLocation(_depthLinearProgram, "far_plane"), _pointLights[_pointLightIndex]->GetFarPlane());
+                    glUniform3fv(glGetUniformLocation(_depthLinearProgram, "lightPos"), 1, glm::value_ptr(_pointLights[i]->GetGlobalPosition()));
+                    glUniform1f(glGetUniformLocation(_depthLinearProgram, "far_plane"), _pointLights[i]->GetFarPlane());
 
                     for (int j = 0; j < _objects.size(); j++) {
                         if (_objects[j]->CastsShadows) {
                             glUniformMatrix4fv(glGetUniformLocation(_depthLinearProgram, "model"), 1, false, glm::value_ptr(_objects[j]->GetModelMatrix()));
-                            _objects[j]->Draw(_depthLinearProgram, _pointLights[_pointLightIndex]->GetViewProjection(face), _pointLights[_pointLightIndex]->GetFrustum(face));
+                            _objects[j]->Draw(_depthLinearProgram, _pointLights[i]->GetViewProjection(face), _pointLights[i]->GetFrustum(face));
                         }
                     }
                 }
-                _pointLightIndex = (_pointLightIndex + 1) % _pointLights.size();
             }
         }
 
@@ -366,7 +366,6 @@ namespace sg {
                 _directionalLights.erase(_directionalLights.begin());
             while (_ambientLights.size() > 0)
                 _ambientLights.erase(_ambientLights.begin());
-            _pointLightIndex = 0;
         }
 
         int RenderFrame() {

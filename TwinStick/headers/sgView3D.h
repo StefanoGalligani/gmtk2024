@@ -40,8 +40,8 @@ namespace sg {
 			}
 			else
 			{
-				const float halfHSide = 2 * _fov;
-				const float halfVSide = halfHSide * _aspectRatio;
+				const float halfVSide = 2 * _fov;
+				const float halfHSide = halfVSide * _aspectRatio;
 
 				_frustum.rightFace = { GetGlobalPosition() + GlobalRight() * halfHSide, -GlobalRight() };
 				_frustum.leftFace = { GetGlobalPosition() - GlobalRight() * halfHSide, GlobalRight() };
@@ -64,10 +64,10 @@ namespace sg {
 			UpdateFrustum();
 		}
 
-		void SetOrthogonal() {
+		void SetOrthographic() {
 			_orthographic = true;
 
-			_projectionMatrix = glm::scale(glm::vec3(0.5, 0.5 * _aspectRatio, -0.5)); //siamo sicuri che _aspectRatio vada moltiplicato alla y e non alla x?
+			_projectionMatrix = glm::scale(glm::vec3(0.5 * _aspectRatio, 0.5, -0.5));
 			_projectionMatrix = glm::translate(_projectionMatrix, glm::vec3(0, 0, 2));
 			_projectionMatrix = glm::scale(_projectionMatrix, glm::vec3(1 / _fov, 1 / _fov, 1 / (_farPlane - _nearPlane)));
 			_projectionMatrix = glm::translate(_projectionMatrix, glm::vec3(0, 0, _nearPlane));
@@ -101,9 +101,17 @@ namespace sg {
 			UpdateProjectionMatrix();
 		}
 
+		float GetFov() {
+			return _fov;
+		}
+
 		void SetAspectRatio(float aspectRatio) {
 			_aspectRatio = aspectRatio;
 			UpdateProjectionMatrix();
+		}
+
+		float GetAspectRatio() {
+			return _aspectRatio;
 		}
 
 		void SetNearPlane(float nearPlane) {
@@ -111,9 +119,21 @@ namespace sg {
 			UpdateProjectionMatrix();
 		}
 
+		float GetNearPlane() {
+			return _nearPlane;
+		}
+
 		void SetFarPlane(float farPlane) {
 			_farPlane = farPlane;
 			UpdateProjectionMatrix();
+		}
+
+		float GetFarPlane() {
+			return _farPlane;
+		}
+
+		bool IsOrthographic() {
+			return _orthographic;
 		}
 
 		glm::mat4 GetViewProjection() {
