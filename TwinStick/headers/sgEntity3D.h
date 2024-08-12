@@ -44,15 +44,26 @@ namespace sg {
 
 		glm::mat3 LocalPositionToGlobalMatrix() {
 			glm::mat3 matrix = glm::mat3();
-			matrix[0][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().x;
-			matrix[1][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().y;
-			matrix[2][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().z;
-			matrix[0][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().x;
-			matrix[1][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().y;
-			matrix[2][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().z;
-			matrix[0][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().x;
-			matrix[1][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().y;
-			matrix[2][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().z;
+			float x = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.x) +
+					_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.x) +
+					_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.x);
+			float y = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.y) +
+				_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.y) +
+				_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.y);
+			float z = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.z) +
+				_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.z) +
+				_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.z);
+			//TODO non proprio corretto, le rotazioni fanno movimenti strani
+
+			matrix[0][0] = x * _parent->GlobalRight().x;
+			matrix[1][0] = x * _parent->GlobalRight().y;
+			matrix[2][0] = x * _parent->GlobalRight().z;
+			matrix[0][1] = y * _parent->GlobalUp().x;
+			matrix[1][1] = y * _parent->GlobalUp().y;
+			matrix[2][1] = y * _parent->GlobalUp().z;
+			matrix[0][2] = z * _parent->GlobalForward().x;
+			matrix[1][2] = z * _parent->GlobalForward().y;
+			matrix[2][2] = z * _parent->GlobalForward().z;
 			return matrix;
 		}
 
@@ -78,8 +89,7 @@ namespace sg {
 			if (_parent == NULL) {
 				_localTransform.scale = _globalTransform.scale;
 			} else {
-				//TODO
-				//dipende da scala globale e scala del parent
+				_localTransform.scale = _globalTransform.scale / _parent->_globalTransform.scale;
 			}
 
 			if (updateChildren) UpdateGlobalTransformInChildren();
@@ -115,18 +125,7 @@ namespace sg {
 			if (_parent == NULL) {
 				_globalTransform.scale = _localTransform.scale;
 			} else {
-				_globalTransform.scale.x = _localTransform.scale.x *
-					(1 + abs(LocalRight().x) * (_parent->GetGlobalScale().x - 1)) *
-					(1 + abs(LocalRight().y) * (_parent->GetGlobalScale().y - 1)) *
-					(1 + abs(LocalRight().z) * (_parent->GetGlobalScale().z - 1));
-				_globalTransform.scale.y = _localTransform.scale.y *
-					(1 + abs(LocalUp().x) * (_parent->GetGlobalScale().x - 1)) *
-					(1 + abs(LocalUp().y) * (_parent->GetGlobalScale().y - 1)) *
-					(1 + abs(LocalUp().z) * (_parent->GetGlobalScale().z - 1));
-				_globalTransform.scale.z = _localTransform.scale.z *
-					(1 + abs(LocalForward().x) * (_parent->GetGlobalScale().x - 1)) *
-					(1 + abs(LocalForward().y) * (_parent->GetGlobalScale().y - 1)) *
-					(1 + abs(LocalForward().z) * (_parent->GetGlobalScale().z - 1));
+				_globalTransform.scale = _localTransform.scale * _parent->_globalTransform.scale;
 			}
 
 			if (updateChildren) UpdateGlobalTransformInChildren();
