@@ -45,7 +45,9 @@ namespace sg {
 	protected:
 		void UpdateView() override {
 			View3D::UpdateView();
-			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * GetViewProjection();
+
+			glm::mat4 viewProj = GetProjection() * glm::translate(glm::vec3(0, 0, 0.05f)) * GetView();
+			_shadowMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::vec3(0.5f, 0.5f, 0.5f)) * viewProj;
 			SetBoundingBox();
 		}
 

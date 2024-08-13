@@ -4,6 +4,8 @@
 #include <EnemyManager.h>
 #include <Bullet.h>
 #include <MapCreator.h>
+#include <irrKlang.h>
+using namespace irrklang;
 
 sg::Renderer* renderer;
 Player* player;
@@ -16,16 +18,14 @@ sg::PointLight3D* shootLight;
 int shootLightPresent = 0;
 
 bool showTriangulation = false;
-bool pressedCTRL = false;
-int pressedL = 0;
-int pressedR = 0;
-double prevx = 0;
-double prevy = 0;
+bool minimized = false;
 
 float resx = 1080;
 float resy = 720;
 int shadowResx = 1024;
 int shadowResy = 1024;
+
+ISoundEngine* SoundEngine = createIrrKlangDevice();
 
 #define PLAYER_SPEED 10
 #define ENEMY_SPEED 4
@@ -90,23 +90,24 @@ private:
         float previousPlayerZ = player->GetGlobalPosition().z - 15;
         while (!renderer->Terminated())
         {
-            if (checkGameOver()) {
-                cleanup();
-                initGame();
+            if (!minimized) {
+                if (checkGameOver()) {
+                    cleanup();
+                    initGame();
+                }
+                float newPlayerZ = player->GetGlobalPosition().z - 15;
+                if (previousPlayerZ * newPlayerZ < 0) mapCreator->SwapLights();
+                previousPlayerZ = newPlayerZ;
+
+                int fps = renderer->RenderFrame();
+                std::stringstream ss{};
+                ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
+                glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
+
+                if (shootLightPresent > 0 && --shootLightPresent == 0) {
+                    renderer->RemoveLight(shootLight);
+                }
             }
-            float newPlayerZ = player->GetGlobalPosition().z - 15;
-            if (previousPlayerZ * newPlayerZ < 0) mapCreator->SwapLights();
-            previousPlayerZ = newPlayerZ;
-
-            int fps = renderer->RenderFrame();
-            std::stringstream ss{};
-            ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
-            glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
-
-            if (shootLightPresent > 0 && --shootLightPresent == 0) {
-                renderer->RemoveLight(shootLight);
-            }
-
             glfwPollEvents();
         }
     }
@@ -159,9 +160,6 @@ private:
         BindInput(sg::Key_Esc_Down, onEscKeyPressed);
         BindInput(sg::Key_Space_Down, onSpaceKeyPressed);
         BindInput(sg::Mouse_Left_Down, onLeftMouseButtonClick);
-        BindInput(sg::Mouse_Left_Up, onLeftMouseButtonRelease);
-        BindInput(sg::Mouse_Right_Down, onRightMouseButtonClick);
-        BindInput(sg::Mouse_Right_Up, onRightMouseButtonRelease);
         BindInput(sg::Mouse_Position, onMouseDrag);
         BindInput(sg::Window_Resize, onWindowResize);
 
@@ -198,13 +196,11 @@ private:
         resx = x;
         resy = y;
         renderer->SetResolution(resx, resy);
-        player->UpdateCameraResolution(resx, resy);
+        minimized = (x * y == 0);
+        if (!minimized) player->UpdateCameraResolution(resx, resy);
     }
 
     static void onLeftMouseButtonClick(int mods) {
-        pressedL = true;
-        pressedCTRL = (mods & GLFW_MOD_CONTROL) > 0;
-
         Bullet* bullet = new Bullet(
             player->GetGlobalPosition() + player->GetDirection() * 1.4f,
             player->GetDirection(),
@@ -219,19 +215,8 @@ private:
         shootLight->SetGlobalPosition(player->GetGlobalPosition() + player->GetDirection() * 1.4f + glm::vec3(0, 1.4571, 0));
         if (shootLightPresent == 0) renderer->AddLight(shootLight);
         shootLightPresent = 1;
-    }
 
-    static void onLeftMouseButtonRelease(int mods) {
-        pressedL = false;
-    }
-
-    static void onRightMouseButtonClick(int mods) {
-        pressedR = true;
-        pressedCTRL = (mods & GLFW_MOD_CONTROL) > 0;
-    }
-
-    static void onRightMouseButtonRelease(int mods) {
-        pressedR = false;
+        SoundEngine->play2D("res/sfx/Gun.wav");
     }
 
     static void onWPressed(int mods) {
@@ -267,41 +252,6 @@ private:
     }
 
     static void onMouseDrag(double xpos, double ypos) {
-        /*if (pressedCTRL) {
-            if (pressedL) {
-                double movex = (xpos - prevx) / resx;
-                double movey = -(ypos - prevy) / resy;
-                lightObj.RotateAroundGlobal(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
-                lightObj.RotateAroundGlobal(-lightObj.GlobalRight(), glm::vec3(0, 0, 0), movey);
-                spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
-                spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
-            }
-            if (pressedR) {
-                float movey = (ypos - prevy) / resy;
-                lightObj.TranslateGlobal(lightObj.GetGlobalPosition() * movey);
-                spotLight.SetGlobalPosition(lightObj.GetGlobalPosition());
-                spotLight.LookAtGlobal(glm::vec3(0, 0, 0));
-            }
-        }
-        else {
-            if (pressedL) {
-                double movex = -(xpos - prevx) / resx;
-                mainCamera.RotateAroundGlobal(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), movex);
-
-                double movey = (ypos - prevy) / resy;
-                float yForward = mainCamera.GlobalForward().y;
-                if (glm::abs(yForward) < 0.99 || yForward * movey > 0) {
-                    mainCamera.RotateAroundGlobal(-mainCamera.GlobalRight(), glm::vec3(0, 0, 0), movey);
-                }
-            }
-            if (pressedR) {
-                float movey = (ypos - prevy) / resy;
-                mainCamera.TranslateGlobal(mainCamera.GetGlobalPosition() * movey);
-            }
-        }
-        prevx = xpos;
-        prevy = ypos;
-        */
         player->SetNewDirection(xpos - resx/2, ypos - resy/2);
     }
 #pragma endregion

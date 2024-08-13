@@ -140,6 +140,10 @@ namespace sg {
 			return _viewProjectionMatrix;
 		}
 
+		glm::mat4 GetProjection() {
+			return _projectionMatrix;
+		}
+
 		glm::mat4 GetView() {
 			return _viewMatrix;
 		}
