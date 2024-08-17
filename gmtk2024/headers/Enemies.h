@@ -1,17 +1,14 @@
 #pragma once
 #include <sgObject3D.h>
 #include <glm/glm/gtx/vector_angle.hpp>
-#include <random>
+#include <glm/glm/gtc/random.hpp>
 
 glm::vec3 RandomVec3() {
-	float x = float(rand()) / float(RAND_MAX) * 2 - 1;
-	float y = float(rand()) / float(RAND_MAX) * 2 - 1;
-	float z = float(rand()) / float(RAND_MAX) * 2 - 1;
-	return glm::vec3(x, y, z);
+	return glm::linearRand(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
 }
 
 int Random(int min, int max) {
-	return min + (rand() % (max - min));
+	return glm::linearRand(min, max);
 }
 
 class AbstractEnemy : public sg::Object3D {
@@ -23,7 +20,13 @@ protected:
 public:
 	AbstractEnemy(int health, float acceleration, float deceleration, float maxVelocity, sg::Model* model) : Object3D() {
 		_health = health;
+		_acceleration = acceleration;
+		_deceleration = deceleration;
+		_maxVelocity = maxVelocity;
 		SetModel(model);
+		Lit = true;
+		CastsShadows = true;
+		ReceivesShadows = true;
 	}
 
 	bool Damage(int dmg) {
@@ -66,6 +69,10 @@ public:
 
 	SphereEnemy(SphereEnemy* temp)
 		: SphereEnemy(temp->_health, temp->_acceleration, temp->_deceleration, temp->_maxVelocity, temp->GetModel(), temp->_playerObj) { }
+
+	void Update(double dt) override {
+		AbstractEnemy::Update(dt);
+	}
 };
 
 
@@ -78,6 +85,8 @@ private:
 	SphereEnemy* _templateEnemy;
 	int _nEnemies;
 	std::vector<glm::vec3> _spawnPoints;
+	sg::Renderer* _renderer;
+	sg::Entity3D* _enemyManager;
 
 	void InitSpawnPoints() {
 		_spawnPoints.resize(2);
@@ -91,6 +100,8 @@ private:
 			glm::vec3 pos = _spawnPoints[Random(0, _spawnPoints.size())];
 			glm::vec3 offset = GlobalForward() * pos.z + GlobalRight() * pos.x + GlobalUp() * pos.y;
 			s->SetGlobalPosition(GetGlobalPosition() + offset);
+			_enemyManager->AddChild(s, false);
+			_renderer->AddObject(s);
 		}
 	}
 
@@ -101,13 +112,15 @@ protected:
 
 public:
 	LargeEnemy(int health, float acceleration, float deceleration, float maxVelocity, sg::Model* model,
-		float rotSpeed, float cooldownTime, SphereEnemy* templateEnemy, int nEnemies)
+		float rotSpeed, float cooldownTime, SphereEnemy* templateEnemy, int nEnemies, sg::Renderer* renderer, sg::Entity3D* enemyManager)
 		: AbstractEnemy(health, acceleration, deceleration, maxVelocity, model) {
 		_cooldownTime = cooldownTime;
 		_rotSpeed = rotSpeed;
 		_rotAxis = glm::normalize(RandomVec3());
 		_templateEnemy = templateEnemy;
 		_nEnemies = nEnemies;
+		_renderer = renderer;
+		_enemyManager = enemyManager;
 		InitSpawnPoints();
 	}
 

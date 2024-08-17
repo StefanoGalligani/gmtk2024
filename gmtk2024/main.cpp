@@ -26,6 +26,7 @@ int shadowResy = 1024;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
 
+#define PLAYER_HEALTH 5
 #define PLAYER_ACCELERATION 10
 #define PLAYER_DECELERATION 2
 #define PLAYER_MAX_VELOCITY 20
@@ -113,14 +114,13 @@ private:
     }
 
     bool checkGameOver() {
-        return false;
-        return enemyManager->CheckCollision(player->GetGlobalPosition());
+        return player->IsDead();
     }
 
     void cleanup() {
         printf("Terminating");
         delete(player);
-        //delete(enemyManager);
+        delete(enemyManager);
         delete(bulletModel);
         delete(mapCreator);
         delete(ambientLight);
@@ -135,8 +135,8 @@ private:
 
     void InitObjects() {
         printf("Initializing objects\n");
-        player = new Player(renderer, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
-        //enemyManager = new EnemyManager(renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
+        player = new Player(renderer, PLAYER_HEALTH, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
+        enemyManager = new EnemyManager(renderer, player);
         mapCreator = new MapCreator(renderer);
         bulletModel = new sg::Model();
         bulletModel->LoadFromObj("res/models/projectile.obj");
@@ -185,7 +185,7 @@ private:
     }
 
     static void onLeftMouseButtonClick(int mods) {
-        Bullet* bullet = new Bullet(
+        /*Bullet* bullet = new Bullet(
             player->GetGlobalPosition() + player->GetDirection() * 1.4f,
             player->GetDirection(),
             BULLET_SPEED,
@@ -194,7 +194,7 @@ private:
             renderer,
             bulletModel
         );
-        renderer->AddObject(bullet);
+        renderer->AddObject(bullet);*/
 
         SoundEngine->play2D("res/sfx/Gun.wav");
     }

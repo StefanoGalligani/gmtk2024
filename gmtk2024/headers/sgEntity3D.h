@@ -47,13 +47,13 @@ namespace sg {
 
 			matrix[0][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().x;
 			matrix[1][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().y;
-			matrix[2][0] = -_parent->_globalTransform.scale.x * _parent->GlobalRight().z;
+			matrix[2][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().z;
 			matrix[0][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().x;
 			matrix[1][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().y;
-			matrix[2][1] = -_parent->_globalTransform.scale.y * _parent->GlobalUp().z;
+			matrix[2][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().z;
 			matrix[0][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().x;
 			matrix[1][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().y;
-			matrix[2][2] = -_parent->_globalTransform.scale.z * _parent->GlobalForward().z;
+			matrix[2][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().z;
 			return matrix;
 		}
 

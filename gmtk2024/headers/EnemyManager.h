@@ -1,20 +1,47 @@
 #pragma once
 
 #include <sgEngine.h>
-#include <glm/glm/gtc/random.hpp>
+#include <Enemies.h>
+#include <Player.h>
+
+#define SMALLSPHERE 1
+#define LARGESPHERE 2
+#define SMALLICO 3
+#define LARGEICO 4
+#define SHOOTER 5
 
 class EnemyManager : public sg::Entity3D {
 private:
-	sg::Entity3D* _player;
-	sg::Model* _enemyModel;
+	Player* _player;
+	sg::Model* _virusSphereModel;
+	sg::Model* _virusSphereLargeModel;
+	sg::Model* _virusIcoLargeModel;
+	sg::Model* _virusIcoSmallModel;
+	sg::Model* _virusShooterModel;
+	sg::Model* _bacteriaModel;
 	sg::Renderer* _renderer;
-	float _speed;
-	glm::vec2 _spawnPoints[7];
+	SphereEnemy* _templateSphere;
+	glm::vec3 _spawnPoints[7];
 
-	void AddEnemy(float x, float z) {
-		sg::Object3D* enemy = new sg::Object3D();
-		enemy->SetGlobalPosition(x, 0, z);
-		enemy->SetModel(_enemyModel);
+	void AddEnemy(int type, glm::vec3 pos) {
+		AbstractEnemy* enemy = NULL;
+		switch (type) {
+		case SMALLSPHERE:
+			enemy = new SphereEnemy(_templateSphere);
+			break;
+		case LARGESPHERE:
+			enemy = new LargeEnemy(5, 0, 1, 5, _virusSphereLargeModel, 0.2f, 4, _templateSphere, 2, _renderer, this);
+			break;
+		case SMALLICO:
+			break;
+		case LARGEICO:
+			break;
+		case SHOOTER:
+			break;
+		default:
+			return;
+		}
+		enemy->SetGlobalPosition(pos);
 		enemy->Lit = true;
 		enemy->CastsShadows = true;
 		enemy->ReceivesShadows = true;
@@ -23,65 +50,58 @@ private:
 	}
 
 	void InitSpawnPoints() {
-		_spawnPoints[0] = glm::vec2(-25, 25);
-		_spawnPoints[1] = glm::vec2(25, 25);
-		_spawnPoints[2] = glm::vec2(-35, -25);
-		_spawnPoints[3] = glm::vec2(35, 0);
-		_spawnPoints[4] = glm::vec2(35, -20);
-		_spawnPoints[5] = glm::vec2(-15, -45);
-		_spawnPoints[6] = glm::vec2(15, -45);
+		_spawnPoints[0] = glm::vec3(-25, 0, 25);
+		_spawnPoints[1] = glm::vec3(25, 0, 25);
+		_spawnPoints[2] = glm::vec3(-35, 0, -25);
+		_spawnPoints[3] = glm::vec3(35, 0, 0);
+		_spawnPoints[4] = glm::vec3(35, 0, -20);
+		_spawnPoints[5] = glm::vec3(-15, 0, -45);
+		_spawnPoints[6] = glm::vec3(15, 0, -45);
 	}
 
-	void SpawnZombies(int n) {
+	void SpawnEnemy(int type, int n) {
 		int prevRand = -1;
 		for (int i = 0; i < n; i++) {
 			int rand = -1;
 			do {
 				rand = glm::linearRand(0, 6);
 			} while (rand == prevRand);
-			glm::vec2 pos = _spawnPoints[rand];
-			AddEnemy(pos.x, pos.y);
+			glm::vec3 pos = _spawnPoints[rand];
+			AddEnemy(type, pos);
 		}
 	}
 
 public:
-	EnemyManager(sg::Renderer* renderer, float speed, sg::Entity3D* player, const char* modelPath) : Entity3D() {
+	EnemyManager(sg::Renderer* renderer, Player* player) : Entity3D() {
 		_renderer = renderer;
 		_player = player;
-		_enemyModel = new sg::Model();
-		_enemyModel->LoadFromObj(modelPath);
-		_speed = speed;
+
+		_virusSphereModel = new sg::Model();
+		_virusSphereModel->LoadFromObj("res/models/virus_sphere.obj");
+		_virusSphereLargeModel = new sg::Model();
+		_virusSphereLargeModel->LoadFromObj("res/models/virus_large.obj");
+		_virusIcoLargeModel = new sg::Model();
+		_virusIcoLargeModel->LoadFromObj("res/models/virus_ico_large.obj");
+		_virusIcoSmallModel = new sg::Model();
+		_virusIcoSmallModel->LoadFromObj("res/models/virus_ico_small.obj");
+		_virusShooterModel = new sg::Model();
+		_virusShooterModel->LoadFromObj("res/models/virus_shooter.obj");
+		_bacteriaModel = new sg::Model();
+		_bacteriaModel->LoadFromObj("bacteria.obj");
+
+		_templateSphere = new SphereEnemy(5, 10, 5, 20, _virusSphereModel, _player->GetObject());
 
 		_renderer->AddEntity(this);
 
 		InitSpawnPoints();
 
-		AddEnemy(0, 15);
-		AddEnemy(-15, 0);
+		AddEnemy(LARGESPHERE, glm::vec3(20, 20, 20));
 	}
 
 	void Update(double dt) override {
-		for (const auto& child : _children) {
-			child->LookAtGlobal(_player->GetGlobalPosition());
-			child->TranslateGlobal((float)dt * _speed * child->GlobalForward());
-		}
 	}
 
 	bool CheckCollision(glm::vec3 position) {
-		sg::Object3D* toDelete = NULL;
-		for (const auto& child : _children) {
-			if (glm::distance2(child->GetGlobalPosition(), position) < 1) {
-				toDelete = dynamic_cast<sg::Object3D*>(child);
-				break;
-			}
-		}
-		if (toDelete != NULL) {
-			_renderer->RemoveObject(toDelete);
-			RemoveChild(toDelete, false);
-			delete(toDelete);
-			SpawnZombies(2);
-			return true;
-		}
 		return false;
 	}
 
@@ -89,5 +109,13 @@ public:
 		for (const auto& child : _children) {
 			delete(child);
 		}
+
+		delete(_virusSphereModel);
+		delete(_virusSphereLargeModel);
+		delete(_virusIcoLargeModel);
+		delete(_virusIcoSmallModel);
+		delete(_virusShooterModel);
+		delete(_bacteriaModel);
+		delete(_templateSphere);
 	}
 };
