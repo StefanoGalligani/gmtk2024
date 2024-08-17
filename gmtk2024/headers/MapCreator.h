@@ -14,10 +14,6 @@ private:
     sg::Object3D* _siloObj;
     sg::Object3D* _siloObj2;
 
-    std::vector<sg::Object3D*> _lampObjs;
-    std::vector<sg::PointLight3D*> _lampLights;
-    bool _topLightsInScene;
-
     std::vector<sg::Object3D*> _trees;
 
     void GenerateTrees(int n, glm::vec3 min, glm::vec3 max) {
@@ -32,35 +28,6 @@ private:
             _trees.push_back(treeObj);
             _renderer->AddObject(treeObj);
         }
-    }
-
-    void PlaceLamps() {
-        _lampModel = new sg::Model();
-        _lampModel->LoadFromObj("res/models/streetlamp.obj");
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                sg::Object3D* lampObj = new sg::Object3D();
-                lampObj->SetModel(_lampModel);
-                lampObj->SetGlobalPosition(-27 + i * 54, 0, -18 + j * 54);
-                lampObj->Lit = true;
-                lampObj->CastsShadows = true;
-                lampObj->ReceivesShadows = true;
-
-                sg::PointLight3D* lampLight = new sg::PointLight3D(512, 0.05, 20);
-                lampLight->SetIntensity(2);
-                lampLight->SetColor(glm::vec3(1, 0.6f, 0));
-                lampLight->SetLocalPosition(glm::vec3(0, 9.85f, 0));
-                lampObj->AddChild(lampLight, true);
-
-                _lampObjs.push_back(lampObj);
-                _lampLights.push_back(lampLight);
-                _renderer->AddObject(lampObj);
-                if (j == 0) {
-                    _renderer->AddLight(lampLight);
-                }
-            }
-        }
-        _topLightsInScene = true;
     }
 
 public:
@@ -103,24 +70,7 @@ public:
         GenerateTrees(10, glm::vec3(-40, 0, 15), glm::vec3(-32, 0, 40));
         GenerateTrees(15, glm::vec3(30, 0, -30), glm::vec3(40, 0, 40));
         GenerateTrees(15, glm::vec3(-25, 0, 40), glm::vec3(25, 0, 43));
-
-        PlaceLamps();
 	}
-
-    void SwapLights() {
-        if (_topLightsInScene) {
-            _renderer->RemoveLight(_lampLights[0]);
-            _renderer->RemoveLight(_lampLights[2]);
-            _renderer->AddLight(_lampLights[1]);
-            _renderer->AddLight(_lampLights[3]);
-        } else {
-            _renderer->RemoveLight(_lampLights[1]);
-            _renderer->RemoveLight(_lampLights[3]);
-            _renderer->AddLight(_lampLights[0]);
-            _renderer->AddLight(_lampLights[2]);
-        }
-        _topLightsInScene = !_topLightsInScene;
-    }
 
 	~MapCreator() {
         delete(_mapObj);
@@ -131,12 +81,6 @@ public:
         delete(_lampModel);
         for (const auto& tree : _trees) {
             delete(tree);
-        }
-        for (const auto& lamp : _lampObjs) {
-            delete(lamp);
-        }
-        for (const auto& light : _lampLights) {
-            delete(light);
         }
 	}
 };

@@ -5,65 +5,77 @@
 class Player : public sg::Entity3D {
 private:
 	sg::Object3D* _playerObj;
-	sg::SpotLight3D* _spotLight;
+	sg::SpotLight3D* _spotLightRight;
+	sg::SpotLight3D* _spotLightLeft;
 	sg::Camera3D* _mainCamera;
-	glm::vec3 _rawVelocity = glm::vec3(0);
 	glm::vec3 _velocity = glm::vec3(0);
-	bool _pressedKeys[4];
-	float _speed;
+	bool _pressedAccel;
+	float _acceleration;
+	float _deceleration;
+	float _maxVelocity;
 
 public:
-	Player(sg::Renderer* renderer, float speed, int shadowResx, int shadowResy, int resx, int resy) {
-		_speed = speed;
+	Player(sg::Renderer* renderer, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy) {
+		_acceleration = acceleration;
+		_deceleration = deceleration;
+		_maxVelocity = maxVelocity;
 
 		_playerObj = new sg::Object3D();
-		_playerObj->LoadModelFromObj("res/models/player.obj");
+		_playerObj->LoadModelFromObj("res/models/ship.obj");
 		_playerObj->Lit = true;
 		_playerObj->CastsShadows = true;
-		_playerObj->ReceivesShadows = true;
+		_playerObj->ReceivesShadows = false;
+		_playerObj->SetGlobalPosition(0, 0, 0);
 
-		_spotLight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 30.0f);
-		_spotLight->SetGlobalPosition(glm::vec3(0.2f, 1.18f, -1.27f));
-		_spotLight->SetColor(glm::vec3(1.0, 1.0, 0.8));
-		_spotLight->SetIntensity(2);
-		_spotLight->SetMapTexture("res/lightMask.jpg");
+		_spotLightRight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 30.0f);
+		_spotLightRight->SetGlobalPosition(glm::vec3(0.354049f, 0.238036f, -0.886109f));
+		_spotLightRight->SetColor(glm::vec3(1.0, 1.0, 0.8));
+		_spotLightRight->SetIntensity(2);
+		_spotLightRight->SetMapTexture("res/lightMask.jpg");
+
+		_spotLightLeft = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 2, (float)shadowResx / shadowResy, 0.05f, 30.0f);
+		_spotLightLeft->SetGlobalPosition(glm::vec3(-0.354049f, 0.238036f, -0.886109f));
+		_spotLightLeft->SetColor(glm::vec3(1.0, 1.0, 0.8));
+		_spotLightLeft->SetIntensity(2);
+		_spotLightLeft->SetMapTexture("res/lightMask.jpg");
 
 		_mainCamera = new sg::Camera3D(1.5f, (float)resx / resy, 0.05f, 3000.0f);
-		_mainCamera->SetGlobalPosition(glm::vec3(0, 9, 5));
-		_mainCamera->LookAtGlobal(glm::vec3(0, 0, 0));
+		_mainCamera->SetLocalPosition(glm::vec3(0, 1, 2));
+		_mainCamera->LookAtLocal(glm::vec3(0, 0, 0));
 
 		AddChild(_playerObj, false);
 		AddChild(_mainCamera, false);
-		_playerObj->AddChild(_spotLight, false);
+		_playerObj->AddChild(_spotLightRight, false);
+		_playerObj->AddChild(_spotLightLeft, false);
 
 		renderer->AddObject(_playerObj);
 		renderer->SetMainCamera(_mainCamera);
-		renderer->AddLight(_spotLight);
+
+		renderer->AddLight(_spotLightRight);
+		renderer->AddLight(_spotLightLeft);
 		renderer->AddEntity(this);
 	}
 
-	void SetHoriz(int dir, bool pressed) {
-		if (dir == -1) _pressedKeys[0] = pressed;
-		if (dir == 1) _pressedKeys[1] = pressed;
-		_rawVelocity.x = (_pressedKeys[0] ? -1: 0) + (_pressedKeys[1] ? 1 : 0);
-		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
+	void SetAccel(bool pressed) {
+		_pressedAccel = pressed;
 	}
 
-	void SetVert(int dir, bool pressed) {
-		if (dir == -1) _pressedKeys[2] = pressed;
-		if (dir == 1) _pressedKeys[3] = pressed;
-		_rawVelocity.z = (_pressedKeys[2] ? -1 : 0) + (_pressedKeys[3] ? 1 : 0);
-		_velocity = (glm::length2(_rawVelocity) > 0.001) ? glm::normalize(_rawVelocity) : glm::vec3(0);
-	}
-
-	void SetNewDirection(int x, int z) {
-		_playerObj->LookAtLocal(glm::normalize(glm::vec3(x, 0, z)));
+	void ChangeDirection(float x, float y) {
+		RotateGlobal(glm::vec3(0, 1, 0), x);
+		_playerObj->RotateLocal(glm::vec3(1, 0, 0), y);
+		_mainCamera->SetGlobalPosition(_playerObj->GetGlobalPosition() + _playerObj->GlobalUp() - _playerObj->GlobalForward()*2.0f);
+		_mainCamera->LookAtGlobal(_playerObj->GetGlobalPosition(), _playerObj->GlobalUp());
 	}
 
 	void Update(double dt) override {
 		sg::Entity3D::Update(dt);
-		TranslateGlobal((float)dt * _velocity * _speed);
-		_globalTransform.position = glm::clamp(GetGlobalPosition(), glm::vec3(-26, 0, -17), glm::vec3(26, 0, 35));
+		if (glm::length2(_velocity) > 0.01f) _velocity -= glm::normalize(_velocity) * _deceleration * float(dt);
+		else _velocity = glm::vec3(0);
+		if (_pressedAccel) {
+			_velocity += _playerObj->GlobalForward() * _acceleration * float(dt);
+		}
+		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
+		TranslateGlobal((float)dt * _velocity);
 	}
 
 	void UpdateCameraResolution(int resx, int resy) {
@@ -76,7 +88,8 @@ public:
 
 	~Player() {
 		delete(_playerObj);
-		delete(_spotLight);
+		delete(_spotLightRight);
+		delete(_spotLightLeft);
 		delete(_mainCamera);
 	}
 };

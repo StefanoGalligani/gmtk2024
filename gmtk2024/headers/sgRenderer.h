@@ -378,7 +378,7 @@ namespace sg {
 
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _origFB);
             glViewport(0, 0, _width, _height);
-            glClear(/*GL_COLOR_BUFFER_BIT |*/ GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             for (int i = 0; i < _objects.size(); i++) {
                 if (_objects[i]->Lit) {

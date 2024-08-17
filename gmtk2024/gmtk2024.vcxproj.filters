@@ -95,6 +95,9 @@
     <ClInclude Include="headers\sgShadowedLight3D.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="headers\Enemies.h">
+      <Filter>File di origine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertexShader_lit.glsl">

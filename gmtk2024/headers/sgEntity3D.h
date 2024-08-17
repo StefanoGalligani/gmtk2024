@@ -44,26 +44,16 @@ namespace sg {
 
 		glm::mat3 LocalPositionToGlobalMatrix() {
 			glm::mat3 matrix = glm::mat3();
-			float x = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.x) +
-					_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.x) +
-					_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.x);
-			float y = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.y) +
-				_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.y) +
-				_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.y);
-			float z = _globalTransform.scale.x * glm::abs(_parent->_globalTransform.right.z) +
-				_globalTransform.scale.y * glm::abs(_parent->_globalTransform.up.z) +
-				_globalTransform.scale.z * glm::abs(_parent->_globalTransform.forward.z);
-			//TODO non proprio corretto, le rotazioni fanno movimenti strani
 
-			matrix[0][0] = x * _parent->GlobalRight().x;
-			matrix[1][0] = x * _parent->GlobalRight().y;
-			matrix[2][0] = x * _parent->GlobalRight().z;
-			matrix[0][1] = y * _parent->GlobalUp().x;
-			matrix[1][1] = y * _parent->GlobalUp().y;
-			matrix[2][1] = y * _parent->GlobalUp().z;
-			matrix[0][2] = z * _parent->GlobalForward().x;
-			matrix[1][2] = z * _parent->GlobalForward().y;
-			matrix[2][2] = z * _parent->GlobalForward().z;
+			matrix[0][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().x;
+			matrix[1][0] = _parent->_globalTransform.scale.x * _parent->GlobalRight().y;
+			matrix[2][0] = -_parent->_globalTransform.scale.x * _parent->GlobalRight().z;
+			matrix[0][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().x;
+			matrix[1][1] = _parent->_globalTransform.scale.y * _parent->GlobalUp().y;
+			matrix[2][1] = -_parent->_globalTransform.scale.y * _parent->GlobalUp().z;
+			matrix[0][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().x;
+			matrix[1][2] = _parent->_globalTransform.scale.z * _parent->GlobalForward().y;
+			matrix[2][2] = -_parent->_globalTransform.scale.z * _parent->GlobalForward().z;
 			return matrix;
 		}
 

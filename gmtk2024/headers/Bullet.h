@@ -26,7 +26,7 @@ public:
 
 	void Update(double dt) override {
 		TranslateGlobal((float)dt * _velocity);
-		bool enemyHit = _enemyManager->CheckCollision(GetGlobalPosition());
+		bool enemyHit = true;// _enemyManager->CheckCollision(GetGlobalPosition());
 		_lifetime -= (float)dt;
 		if (enemyHit || _lifetime < 0) {
 			_renderer->RemoveObject(this);

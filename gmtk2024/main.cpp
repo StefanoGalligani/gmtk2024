@@ -12,25 +12,28 @@ Player* player;
 EnemyManager* enemyManager;
 MapCreator* mapCreator;
 sg::Model* bulletModel;
-sg::DirectionalLight3D* sunLight;
 sg::AmbientLight* ambientLight;
-sg::PointLight3D* shootLight;
-int shootLightPresent = 0;
 
 bool showTriangulation = false;
 bool minimized = false;
 
 float resx = 1080;
 float resy = 720;
+float prevx = -1;
+float prevy = -1;
 int shadowResx = 1024;
 int shadowResy = 1024;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
 
-#define PLAYER_SPEED 10
+#define PLAYER_ACCELERATION 10
+#define PLAYER_DECELERATION 2
+#define PLAYER_MAX_VELOCITY 20
 #define ENEMY_SPEED 4
 #define BULLET_SPEED 50
 #define BULLET_LIFETIME 1
+#define XROTSPEED 10
+#define YROTSPEED 5
 
 class sgGame {
 public:
@@ -65,12 +68,17 @@ private:
 
         renderer = new sg::Renderer();
         if (renderer->InitRenderer(window, resx, resy) < 0) return false;
+
+        glfwSetCursorPos(renderer->GetWindow(), resx / 2, resy / 2);
+        prevx = resx / 2;
+        prevy = resy / 2;
         return true;
     }
 
     void initGame() {
         BindInputs();
         InitObjects();
+        glfwSetInputMode(renderer->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
     int averageFrameRate(int newFrameRate) {
@@ -87,7 +95,6 @@ private:
 
     void mainLoop() {
         printf("Starting rendering\n");
-        float previousPlayerZ = player->GetGlobalPosition().z - 15;
         while (!renderer->Terminated())
         {
             if (!minimized) {
@@ -95,37 +102,28 @@ private:
                     cleanup();
                     initGame();
                 }
-                float newPlayerZ = player->GetGlobalPosition().z - 15;
-                if (previousPlayerZ * newPlayerZ < 0) mapCreator->SwapLights();
-                previousPlayerZ = newPlayerZ;
 
                 int fps = renderer->RenderFrame();
                 std::stringstream ss{};
                 ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
                 glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
-
-                if (shootLightPresent > 0 && --shootLightPresent == 0) {
-                    renderer->RemoveLight(shootLight);
-                }
             }
             glfwPollEvents();
         }
     }
 
     bool checkGameOver() {
+        return false;
         return enemyManager->CheckCollision(player->GetGlobalPosition());
     }
 
     void cleanup() {
         printf("Terminating");
         delete(player);
-        delete(enemyManager);
+        //delete(enemyManager);
         delete(bulletModel);
         delete(mapCreator);
-        delete(sunLight);
         delete(ambientLight);
-        delete(shootLight);
-        shootLightPresent = 0;
         renderer->RemoveAllEntities();
     }
 
@@ -137,22 +135,14 @@ private:
 
     void InitObjects() {
         printf("Initializing objects\n");
-        player = new Player(renderer, PLAYER_SPEED, shadowResx, shadowResy, resx, resy);
-        enemyManager = new EnemyManager(renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
+        player = new Player(renderer, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
+        //enemyManager = new EnemyManager(renderer, ENEMY_SPEED, player, "res/models/zombie.obj");
         mapCreator = new MapCreator(renderer);
         bulletModel = new sg::Model();
         bulletModel->LoadFromObj("res/models/projectile.obj");
 
-        sunLight = new sg::DirectionalLight3D(shadowResx*2, shadowResy*2, 35, 1, 50, 130, glm::vec3(0.1, -0.5, -0.5));
-        sunLight->SetIntensity(0.2f);
-        renderer->AddLight(sunLight);
-
-        ambientLight = new sg::AmbientLight(0.12f);
+        ambientLight = new sg::AmbientLight(1.0f);
         renderer->AddLight(ambientLight);
-
-        shootLight = new sg::PointLight3D(128, 0.05, 50);
-        shootLight->SetColor(glm::vec3(1, 0.2, 0.2));
-        shootLight->SetIntensity(10);
     }
 
 #pragma region input
@@ -165,12 +155,6 @@ private:
 
         BindInput(sg::Key_W_Down, onWPressed);
         BindInput(sg::Key_W_Up, onWReleased);
-        BindInput(sg::Key_S_Down, onSPressed);
-        BindInput(sg::Key_S_Up, onSReleased);
-        BindInput(sg::Key_A_Down, onAPressed);
-        BindInput(sg::Key_A_Up, onAReleased);
-        BindInput(sg::Key_D_Down, onDPressed);
-        BindInput(sg::Key_D_Up, onDReleased);
     }
 
     void BindInput(int cmd, sg::sgKeyOrMouseFun callback) {
@@ -212,47 +196,25 @@ private:
         );
         renderer->AddObject(bullet);
 
-        shootLight->SetGlobalPosition(player->GetGlobalPosition() + player->GetDirection() * 1.4f + glm::vec3(0, 1.4571, 0));
-        if (shootLightPresent == 0) renderer->AddLight(shootLight);
-        shootLightPresent = 1;
-
         SoundEngine->play2D("res/sfx/Gun.wav");
     }
 
     static void onWPressed(int mods) {
-        player->SetVert(-1, true);
+        player->SetAccel(true);
     }
 
     static void onWReleased(int mods) {
-        player->SetVert(-1, false);
-    }
-
-    static void onSPressed(int mods) {
-        player->SetVert(1, true);
-    }
-
-    static void onSReleased(int mods) {
-        player->SetVert(1, false);
-    }
-
-    static void onAPressed(int mods) {
-        player->SetHoriz(-1, true);
-    }
-
-    static void onAReleased(int mods) {
-        player->SetHoriz(-1, false);
-    }
-
-    static void onDPressed(int mods) {
-        player->SetHoriz(1, true);
-    }
-
-    static void onDReleased(int mods) {
-        player->SetHoriz(1, false);
+        player->SetAccel(false);
     }
 
     static void onMouseDrag(double xpos, double ypos) {
-        player->SetNewDirection(xpos - resx/2, ypos - resy/2);
+        player->ChangeDirection(
+            -XROTSPEED * float(xpos - prevx) / float(resx),
+            -YROTSPEED * float(ypos - prevy) / float(resy));
+
+        glfwSetCursorPos(renderer->GetWindow(), resx / 2, resy / 2);
+        prevx = resx / 2;
+        prevy = resy / 2;
     }
 #pragma endregion
 };
