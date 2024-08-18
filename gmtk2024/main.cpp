@@ -24,6 +24,7 @@ int shadowResx = 1024;
 int shadowResy = 1024;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
+ISound* shootSound = NULL;
 
 #define PLAYER_HEALTH 5
 #define PLAYER_ACCELERATION 10
@@ -39,6 +40,7 @@ class sgGame {
 public:
     void run() {
         if (!initWindow()) return;
+        shootSound = SoundEngine->play2D("res/sfx/Gun.wav", false, true);
         initGame();
         mainLoop();
         cleanup();
@@ -83,7 +85,7 @@ private:
 
     void InitObjects() {
         printf("Initializing objects\n");
-        player = new Player(renderer, PLAYER_HEALTH, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
+        player = new Player(renderer, PLAYER_HEALTH, 0.05f, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
         enemyManager = new EnemyManager(renderer, player);
         mapCreator = new MapCreator(renderer);
 
@@ -137,6 +139,7 @@ private:
     }
 
     void closeApplication() {
+        shootSound->drop();
         renderer->DestroyWindow();
         delete(renderer);
         glfwTerminate();
@@ -183,10 +186,15 @@ private:
 
     static void onLeftMouseButtonClick(int mods) {
         player->ShowRay();
-        sg::Object3D* obj = player->GetPlayerObj();
+        sg::Object3D* obj = player->GetObject();
         enemyManager->AttackEnemies(obj->GetGlobalPosition(), obj->GlobalForward(), 300);
 
-        SoundEngine->play2D("res/sfx/Gun.wav");
+        if (shootSound->isFinished()) {
+            shootSound->drop();
+            shootSound = SoundEngine->play2D("res/sfx/Gun.wav", false, true);
+        }
+        shootSound->setPlayPosition(0);
+        shootSound->setIsPaused(false);
     }
 
     static void onWPressed(int mods) {

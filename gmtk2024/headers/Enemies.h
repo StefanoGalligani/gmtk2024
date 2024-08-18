@@ -13,13 +13,18 @@ int Random(int min, int max) {
 
 class AbstractEnemy : public sg::Object3D {
 private:
-	float _radius;
 	int _health;
-	glm::vec3 _velocity;
 
 protected:
 	virtual glm::vec3 GetDirection() {
 		return glm::vec3(0);
+	}
+
+	virtual glm::vec3 GetCenterOffset() {
+		return glm::vec3(0);
+	}
+
+	virtual void BeforeDeath() {
 	}
 
 	float _acceleration;
@@ -41,11 +46,15 @@ public:
 
 	bool Damage(int dmg) {
 		_health -= dmg;
-		return _health <= 0;
+		if (_health <= 0) {
+			BeforeDeath();
+			return true;
+		}
+		return false;
 	}
 
 	bool TestHit(glm::vec3 origin, glm::vec3 direction, int length) {
-		glm::vec3 toTarget = GetGlobalPosition() - origin;
+		glm::vec3 toTarget = (GetGlobalPosition() + GetCenterOffset()) - origin;
 		float distance = glm::length(toTarget);
 		if (distance > length) return false;
 		float cosa = glm::dot(toTarget, direction) / distance;
@@ -69,6 +78,9 @@ public:
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
 	}
+
+	glm::vec3 _velocity;
+	float _radius;
 };
 
 class SphereEnemy : public AbstractEnemy {
@@ -93,7 +105,6 @@ public:
 		AbstractEnemy::Update(dt);
 	}
 };
-
 
 class LargeEnemy : public AbstractEnemy {
 private:
@@ -150,5 +161,72 @@ public:
 			_counter -= _cooldownTime;
 			SpawnEnemies();
 		}
+	}
+};
+
+class SplittingEnemy : public AbstractEnemy {
+private:
+	SphereEnemy* _templateEnemy;
+	sg::Renderer* _renderer;
+	sg::Entity3D* _enemyManager;
+	sg::Object3D* _playerObj;
+
+	void SpawnEnemies() {
+		for (int i = 0; i < 2; i++) {
+			SphereEnemy* s = new SphereEnemy(_templateEnemy);
+			glm::vec3 offset = 4.0f * RandomVec3();
+			s->SetGlobalPosition(GetGlobalPosition() + offset);
+			s->_velocity = _velocity + 5.0f * (s->GetGlobalPosition() - GetGlobalPosition());
+			_enemyManager->AddChild(s, false);
+			_renderer->AddObject(s);
+		}
+	}
+
+protected:
+	virtual glm::vec3 GetDirection() {
+		return glm::normalize(_playerObj->GetGlobalPosition() - GetGlobalPosition());
+	}
+
+	virtual void BeforeDeath() override {
+		SpawnEnemies();
+	}
+
+public:
+	SplittingEnemy(float acceleration, float deceleration, float maxVelocity, sg::Model* model,
+		SphereEnemy* templateEnemy, sg::Renderer* renderer, sg::Entity3D* enemyManager, sg::Object3D* playerObj)
+		: AbstractEnemy(4, 2.8f, acceleration, deceleration, maxVelocity, model) {
+		_renderer = renderer;
+		_enemyManager = enemyManager;
+		_templateEnemy = templateEnemy;
+		_playerObj = playerObj;
+	}
+
+	void Update(double dt) override {
+		AbstractEnemy::Update(dt);
+	}
+};
+
+
+class Bacteria : public AbstractEnemy { //aggiungere Time to live, con cambiamento di scala verso lo 0
+private:
+
+protected:
+	virtual glm::vec3 GetDirection() override {
+		return glm::vec3(0); //ritornare sempre la stessa iniziale, magari un pochino di autoguida
+	}
+
+	virtual glm::vec3 GetCenterOffset() override {
+		return GlobalForward() * 1.5f;
+	}
+
+public:
+	Bacteria(float acceleration, float deceleration, float maxVelocity, sg::Model* model)
+		: AbstractEnemy(1, 1.5f, acceleration, deceleration, maxVelocity, model) {
+
+	}
+
+	void Update(double dt) override {
+		AbstractEnemy::Update(dt);
+		//ruotare
 	}
 };

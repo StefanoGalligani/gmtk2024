@@ -6,9 +6,8 @@
 
 #define SMALLSPHERE 1
 #define LARGESPHERE 2
-#define SMALLICO 3
-#define LARGEICO 4
-#define SHOOTER 5
+#define LARGEICO 3
+#define SHOOTER 4
 
 class EnemyManager : public sg::Entity3D {
 private:
@@ -21,6 +20,7 @@ private:
 	sg::Model* _bacteriaModel;
 	sg::Renderer* _renderer;
 	SphereEnemy* _templateSphere;
+	SphereEnemy* _templateIco;
 	glm::vec3 _spawnPoints[7];
 
 	void AddEnemy(int type, glm::vec3 pos) {
@@ -32,9 +32,8 @@ private:
 		case LARGESPHERE:
 			enemy = new LargeEnemy(0, 1, 5, _virusSphereLargeModel, 0.2f, 4, _templateSphere, 2, _renderer, this);
 			break;
-		case SMALLICO:
-			break;
 		case LARGEICO:
+			enemy = new SplittingEnemy(8, 4, 30, _virusIcoLargeModel, _templateIco, _renderer, this, _player->GetObject());
 			break;
 		case SHOOTER:
 			break;
@@ -90,12 +89,13 @@ public:
 		_bacteriaModel->LoadFromObj("bacteria.obj");
 
 		_templateSphere = new SphereEnemy(10, 5, 20, _virusSphereModel, _player->GetObject());
+		_templateIco = new SphereEnemy(8, 4, 30, _virusIcoSmallModel, _player->GetObject());
 
 		_renderer->AddEntity(this);
 
 		InitSpawnPoints();
 
-		AddEnemy(LARGESPHERE, glm::vec3(20, 20, 20));
+		AddEnemy(LARGEICO, glm::vec3(20, 20, 20));
 	}
 
 	void AttackEnemies(glm::vec3 position, glm::vec3 direction, int length) {
@@ -115,6 +115,23 @@ public:
 	}
 
 	void Update(double dt) override {
+		bool playerHit = false;
+		for (const auto& child : _children) {
+			AbstractEnemy* enemy = dynamic_cast<AbstractEnemy*>(child);
+			glm::vec3 pToEnemy = enemy->GetGlobalPosition() - _player->GetObject()->GetGlobalPosition();
+			float distance = glm::length(pToEnemy);
+			if (distance <= enemy->_radius + _player->radius) {
+				playerHit = true;
+				glm::vec3 newEnemyVelocity = enemy->_velocity - 2.0f * glm::dot(enemy->_velocity, pToEnemy) / distance + _player->_velocity;
+				glm::vec3 pDeltaVelocity = -2.0f * glm::dot(_player->_velocity, -pToEnemy) / distance + enemy->_velocity;
+				enemy->_velocity = newEnemyVelocity;
+				_player->_velocity += pDeltaVelocity;
+			}
+		}
+		if (playerHit) {
+			_player->Damage();
+			//riprodurre suono
+		}
 	}
 
 	bool CheckCollision(glm::vec3 position) {
@@ -133,5 +150,6 @@ public:
 		delete(_virusShooterModel);
 		delete(_bacteriaModel);
 		delete(_templateSphere);
+		delete(_templateIco);
 	}
 };

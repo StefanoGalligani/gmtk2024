@@ -10,20 +10,25 @@ private:
 	sg::Camera3D* _mainCamera;
 	sg::Object3D* _rayObj;
 	sg::Renderer* _renderer;
-	glm::vec3 _velocity = glm::vec3(0);
 	bool _pressedAccel;
 	float _acceleration;
 	float _deceleration;
 	float _maxVelocity;
 	float _health;
+	float _maxHealth;
+	float _regenSpeed;
+	float _invincibility;
 	int _rayShown;
+	float _baseColor[3];
 
 public:
-	Player(sg::Renderer* renderer, int health, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy) {
+	Player(sg::Renderer* renderer, int health, float regenSpeed, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy) {
 		_acceleration = acceleration;
 		_deceleration = deceleration;
 		_maxVelocity = maxVelocity;
+		_maxHealth = float(health);
 		_health = float(health);
+		_regenSpeed = regenSpeed;
 
 		_playerObj = new sg::Object3D();
 		_playerObj->LoadModelFromObj("res/models/ship.obj");
@@ -63,6 +68,11 @@ public:
 		renderer->AddLight(_spotLightRight);
 		renderer->AddLight(_spotLightLeft);
 		renderer->AddEntity(this);
+
+		sg::Material* mat = _playerObj->GetMaterialReferenceAt(1);
+		_baseColor[0] = mat->Kd[0];
+		_baseColor[1] = mat->Kd[1];
+		_baseColor[2] = mat->Kd[2];
 	}
 
 	sg::Object3D* GetObject() {
@@ -73,10 +83,6 @@ public:
 		_rayObj->LookAtGlobal(_rayObj->GetGlobalPosition() + _playerObj->GlobalForward());
 		_renderer->AddObject(_rayObj);
 		_rayShown = 2;
-	}
-
-	sg::Object3D* GetPlayerObj() {
-		return _playerObj;
 	}
 
 	bool IsDead() {
@@ -107,9 +113,23 @@ public:
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
 
-		if (--_rayShown == 0) {
+		if (_rayShown > 0) _rayShown--;
+		if (_rayShown == 0) {
 			_renderer->RemoveObject(_rayObj);
 		}
+
+		_invincibility -= float(dt);
+		_health = glm::min(_maxHealth, _health + float(dt) * _regenSpeed);
+		sg::Material* mat = _playerObj->GetMaterialReferenceAt(1);
+		mat->Kd[0] = _baseColor[0];
+		mat->Kd[1] = _baseColor[1] * (_health / _maxHealth);
+		mat->Kd[2] = _baseColor[2] * (_health / _maxHealth);
+	}
+
+	void Damage() {
+		if (_invincibility > 0.0f) return;
+		_health -= 1;
+		_invincibility = 0.3f;
 	}
 
 	void UpdateCameraResolution(int resx, int resy) {
@@ -127,4 +147,7 @@ public:
 		delete(_mainCamera);
 		delete(_rayObj);
 	}
+
+	float radius = 0.8f;
+	glm::vec3 _velocity = glm::vec3(0);
 };
