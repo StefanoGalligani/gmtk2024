@@ -121,7 +121,7 @@ public:
 		_invincibility -= float(dt);
 		_health = glm::min(_maxHealth, _health + float(dt) * _regenSpeed);
 		sg::Material* mat = _playerObj->GetMaterialReferenceAt(1);
-		mat->Kd[0] = _baseColor[0];
+		mat->Kd[0] = _baseColor[0] * (_health / _maxHealth);
 		mat->Kd[1] = _baseColor[1] * (_health / _maxHealth);
 		mat->Kd[2] = _baseColor[2] * (_health / _maxHealth);
 	}

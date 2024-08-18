@@ -21,6 +21,7 @@ private:
 	sg::Renderer* _renderer;
 	SphereEnemy* _templateSphere;
 	SphereEnemy* _templateIco;
+	Bacteria* _templateBacteria;
 	glm::vec3 _spawnPoints[7];
 
 	void AddEnemy(int type, glm::vec3 pos) {
@@ -36,6 +37,7 @@ private:
 			enemy = new SplittingEnemy(8, 4, 30, _virusIcoLargeModel, _templateIco, _renderer, this, _player->GetObject());
 			break;
 		case SHOOTER:
+			enemy = new ShooterEnemy(_virusShooterModel, 3.0f, _templateBacteria, _renderer, this, _player->GetObject());
 			break;
 		default:
 			return;
@@ -86,16 +88,17 @@ public:
 		_virusShooterModel = new sg::Model();
 		_virusShooterModel->LoadFromObj("res/models/virus_shooter.obj");
 		_bacteriaModel = new sg::Model();
-		_bacteriaModel->LoadFromObj("bacteria.obj");
+		_bacteriaModel->LoadFromObj("res/models/bacteria.obj");
 
 		_templateSphere = new SphereEnemy(10, 5, 20, _virusSphereModel, _player->GetObject());
 		_templateIco = new SphereEnemy(8, 4, 30, _virusIcoSmallModel, _player->GetObject());
+		_templateBacteria = new Bacteria(30, 0.2f, glm::vec3(0), _bacteriaModel, _player->GetObject());
 
 		_renderer->AddEntity(this);
 
 		InitSpawnPoints();
 
-		AddEnemy(LARGEICO, glm::vec3(20, 20, 20));
+		AddEnemy(SHOOTER, glm::vec3(20, 0, 20));
 	}
 
 	void AttackEnemies(glm::vec3 position, glm::vec3 direction, int length) {
@@ -116,6 +119,8 @@ public:
 
 	void Update(double dt) override {
 		bool playerHit = false;
+		std::vector<sg::Entity3D*> killedEnemies;
+
 		for (const auto& child : _children) {
 			AbstractEnemy* enemy = dynamic_cast<AbstractEnemy*>(child);
 			glm::vec3 pToEnemy = enemy->GetGlobalPosition() - _player->GetObject()->GetGlobalPosition();
@@ -126,16 +131,19 @@ public:
 				glm::vec3 pDeltaVelocity = -2.0f * glm::dot(_player->_velocity, -pToEnemy) / distance + enemy->_velocity;
 				enemy->_velocity = newEnemyVelocity;
 				_player->_velocity += pDeltaVelocity;
+				if (enemy->Damage(1)) killedEnemies.push_back(child);
 			}
 		}
+
 		if (playerHit) {
 			_player->Damage();
 			//riprodurre suono
 		}
-	}
-
-	bool CheckCollision(glm::vec3 position) {
-		return false;
+		for (const auto& child : killedEnemies) {
+			_children.remove(child);
+			_renderer->RemoveObject(dynamic_cast<sg::Object3D*>(child));
+			delete(child);
+		}
 	}
 
 	~EnemyManager() {

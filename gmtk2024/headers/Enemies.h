@@ -206,27 +206,80 @@ public:
 	}
 };
 
-
 class Bacteria : public AbstractEnemy { //aggiungere Time to live, con cambiamento di scala verso lo 0
 private:
+	glm::vec3 _direction;
 
 protected:
 	virtual glm::vec3 GetDirection() override {
-		return glm::vec3(0); //ritornare sempre la stessa iniziale, magari un pochino di autoguida
+		return _direction;
 	}
 
 	virtual glm::vec3 GetCenterOffset() override {
 		return GlobalForward() * 1.5f;
 	}
 
-public:
-	Bacteria(float acceleration, float deceleration, float maxVelocity, sg::Model* model)
-		: AbstractEnemy(1, 1.5f, acceleration, deceleration, maxVelocity, model) {
+	float _rotSpeed;
+	sg::Object3D* _playerObj;
 
+public:
+	Bacteria(float maxVelocity, float rotSpeed, glm::vec3 initialPosition, sg::Model* model, sg::Object3D* playerObj)
+		: AbstractEnemy(1, 1.5f, 100, 0, maxVelocity, model) {
+		_rotSpeed = rotSpeed;
+		_playerObj = playerObj;
+		_direction = glm::normalize(_playerObj->GetGlobalPosition() - initialPosition);
+	}
+
+	Bacteria(Bacteria* b, glm::vec3 initialPosition)
+		: Bacteria(b->_maxVelocity, b->_rotSpeed, initialPosition, b->GetModel(), b->_playerObj) {
+	}
+
+	void Update(double dt) override {
+		_direction += glm::normalize(_playerObj->GetGlobalPosition() - GetGlobalPosition());
+		AbstractEnemy::Update(dt);
+		LookAtGlobal(_direction);
+	}
+};
+
+class ShooterEnemy : public AbstractEnemy {
+private:
+	Bacteria* _templateEnemy;
+	sg::Renderer* _renderer;
+	sg::Entity3D* _enemyManager;
+	sg::Object3D* _playerObj;
+	float _cooldownTime;
+	float _counter;
+
+	void SpawnBullet() {
+		glm::vec3 pos = GetGlobalPosition() + GlobalUp() * 7.0f;
+		Bacteria* b = new Bacteria(_templateEnemy, pos);
+		b->SetGlobalPosition(pos);
+		_enemyManager->AddChild(b, false);
+		_renderer->AddObject(b);
+	}
+
+protected:
+
+	virtual glm::vec3 GetCenterOffset() override {
+		return GlobalUp() * 3.5f;
+	}
+
+public:
+	ShooterEnemy(sg::Model* model, float cooldownTime, Bacteria* templateEnemy, sg::Renderer* renderer, sg::Entity3D* enemyManager, sg::Object3D* playerObj)
+		: AbstractEnemy(4, 2.8f, 0, 0, 0, model) {
+		_cooldownTime = cooldownTime;
+		_renderer = renderer;
+		_enemyManager = enemyManager;
+		_templateEnemy = templateEnemy;
+		_playerObj = playerObj;
 	}
 
 	void Update(double dt) override {
 		AbstractEnemy::Update(dt);
-		//ruotare
+		_counter += float(dt);
+		if (_counter >= _cooldownTime) {
+			_counter -= _cooldownTime;
+			SpawnBullet();
+		}
 	}
 };
