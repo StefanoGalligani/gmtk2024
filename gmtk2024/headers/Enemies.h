@@ -14,6 +14,8 @@ int Random(int min, int max) {
 class AbstractEnemy : public sg::Object3D {
 private:
 	int _health;
+	float _whiteCounter;
+	float _originalColor[3];
 
 protected:
 	virtual glm::vec3 GetDirection() {
@@ -42,6 +44,9 @@ public:
 		Lit = true;
 		CastsShadows = true;
 		ReceivesShadows = true;
+		_originalColor[0] = GetMaterialReferenceAt(0)->Kd[0];
+		_originalColor[1] = GetMaterialReferenceAt(0)->Kd[1];
+		_originalColor[2] = GetMaterialReferenceAt(0)->Kd[2];
 	}
 
 	bool Damage(int dmg) {
@@ -50,6 +55,10 @@ public:
 			BeforeDeath();
 			return true;
 		}
+		GetMaterialReferenceAt(0)->Kd[0] = 1;
+		GetMaterialReferenceAt(0)->Kd[1] = 1;
+		GetMaterialReferenceAt(0)->Kd[2] = 1;
+		_whiteCounter = 0.1f;
 		return false;
 	}
 
@@ -77,6 +86,12 @@ public:
 
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
+
+		if (_whiteCounter > 0 && (_whiteCounter -= float(dt)) <= 0) {
+			GetMaterialReferenceAt(0)->Kd[0] = _originalColor[0];
+			GetMaterialReferenceAt(0)->Kd[1] = _originalColor[1];
+			GetMaterialReferenceAt(0)->Kd[2] = _originalColor[2];
+		}
 	}
 
 	glm::vec3 _velocity;

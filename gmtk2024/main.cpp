@@ -24,7 +24,6 @@ int shadowResx = 1024;
 int shadowResy = 1024;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
-ISound* shootSound = NULL;
 
 #define PLAYER_HEALTH 5
 #define PLAYER_ACCELERATION 10
@@ -40,7 +39,9 @@ class sgGame {
 public:
     void run() {
         if (!initWindow()) return;
-        shootSound = SoundEngine->play2D("res/sfx/Gun.wav", false, true);
+        SoundEngine->setSoundVolume(0);
+        SoundEngine->play2D("res/sfx/Gun.wav");
+
         initGame();
         mainLoop();
         cleanup();
@@ -139,7 +140,6 @@ private:
     }
 
     void closeApplication() {
-        shootSound->drop();
         renderer->DestroyWindow();
         delete(renderer);
         glfwTerminate();
@@ -189,12 +189,8 @@ private:
         sg::Object3D* obj = player->GetObject();
         enemyManager->AttackEnemies(obj->GetGlobalPosition(), obj->GlobalForward(), 300);
 
-        if (shootSound->isFinished()) {
-            shootSound->drop();
-            shootSound = SoundEngine->play2D("res/sfx/Gun.wav", false, true);
-        }
-        shootSound->setPlayPosition(0);
-        shootSound->setIsPaused(false);
+        SoundEngine->setSoundVolume(1);
+        SoundEngine->play2D("res/sfx/Gun.wav");
     }
 
     static void onWPressed(int mods) {
