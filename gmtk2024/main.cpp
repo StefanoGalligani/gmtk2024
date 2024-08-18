@@ -2,7 +2,6 @@
 #include <sstream>
 #include <Player.h>
 #include <EnemyManager.h>
-#include <Bullet.h>
 #include <MapCreator.h>
 #include <irrKlang.h>
 using namespace irrklang;
@@ -82,6 +81,16 @@ private:
         glfwSetInputMode(renderer->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
+    void InitObjects() {
+        printf("Initializing objects\n");
+        player = new Player(renderer, PLAYER_HEALTH, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
+        enemyManager = new EnemyManager(renderer, player);
+        mapCreator = new MapCreator(renderer);
+
+        ambientLight = new sg::AmbientLight(1.0f);
+        renderer->AddLight(ambientLight);
+    }
+
     int averageFrameRate(int newFrameRate) {
         static std::vector<int> frameRates = std::vector<int>();
         static int sum = 0;
@@ -133,18 +142,6 @@ private:
         glfwTerminate();
     }
 
-    void InitObjects() {
-        printf("Initializing objects\n");
-        player = new Player(renderer, PLAYER_HEALTH, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
-        enemyManager = new EnemyManager(renderer, player);
-        mapCreator = new MapCreator(renderer);
-        bulletModel = new sg::Model();
-        bulletModel->LoadFromObj("res/models/projectile.obj");
-
-        ambientLight = new sg::AmbientLight(1.0f);
-        renderer->AddLight(ambientLight);
-    }
-
 #pragma region input
     void BindInputs() {
         BindInput(sg::Key_Esc_Down, onEscKeyPressed);
@@ -185,16 +182,9 @@ private:
     }
 
     static void onLeftMouseButtonClick(int mods) {
-        /*Bullet* bullet = new Bullet(
-            player->GetGlobalPosition() + player->GetDirection() * 1.4f,
-            player->GetDirection(),
-            BULLET_SPEED,
-            BULLET_LIFETIME,
-            enemyManager,
-            renderer,
-            bulletModel
-        );
-        renderer->AddObject(bullet);*/
+        player->ShowRay();
+        sg::Object3D* obj = player->GetPlayerObj();
+        enemyManager->AttackEnemies(obj->GetGlobalPosition(), obj->GlobalForward(), 300);
 
         SoundEngine->play2D("res/sfx/Gun.wav");
     }

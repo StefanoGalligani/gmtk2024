@@ -136,7 +136,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\Bullet.h" />
     <ClInclude Include="headers\Enemies.h" />
     <ClInclude Include="headers\EnemyManager.h" />
     <ClInclude Include="headers\MapCreator.h" />

@@ -8,18 +8,28 @@ glm::vec3 RandomVec3() {
 }
 
 int Random(int min, int max) {
-	return glm::linearRand(min, max);
+	return glm::linearRand(min, max-1);
 }
 
 class AbstractEnemy : public sg::Object3D {
+private:
+	float _radius;
+	int _health;
+	glm::vec3 _velocity;
+
 protected:
 	virtual glm::vec3 GetDirection() {
 		return glm::vec3(0);
 	}
 
+	float _acceleration;
+	float _deceleration;
+	float _maxVelocity;
+
 public:
-	AbstractEnemy(int health, float acceleration, float deceleration, float maxVelocity, sg::Model* model) : Object3D() {
+	AbstractEnemy(int health, float radius, float acceleration, float deceleration, float maxVelocity, sg::Model* model) : Object3D() {
 		_health = health;
+		_radius = radius;
 		_acceleration = acceleration;
 		_deceleration = deceleration;
 		_maxVelocity = maxVelocity;
@@ -34,6 +44,21 @@ public:
 		return _health <= 0;
 	}
 
+	bool TestHit(glm::vec3 origin, glm::vec3 direction, int length) {
+		glm::vec3 toTarget = GetGlobalPosition() - origin;
+		float distance = glm::length(toTarget);
+		if (distance > length) return false;
+		float cosa = glm::dot(toTarget, direction) / distance;
+		if (cosa <= 0) return false;
+		float sina = glm::sqrt(1 - cosa * cosa);
+		float horizDistance = distance *sina / cosa;
+		bool hit = horizDistance <= _radius;
+		if (hit) {
+			return Damage(1);
+		}
+		return false;
+	}
+
 	void Update(double dt) override {
 		sg::Object3D::Update(dt);
 		if (glm::length2(_velocity) > 0.01f) _velocity -= glm::normalize(_velocity) * _deceleration * float(dt);
@@ -44,12 +69,6 @@ public:
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
 	}
-
-	int _health;
-	glm::vec3 _velocity;
-	float _acceleration;
-	float _deceleration;
-	float _maxVelocity;
 };
 
 class SphereEnemy : public AbstractEnemy {
@@ -62,13 +81,13 @@ protected:
 	}
 
 public:
-	SphereEnemy(int health, float acceleration, float deceleration, float maxVelocity, sg::Model* model, sg::Object3D* playerObj)
-		: AbstractEnemy(health, acceleration, deceleration, maxVelocity, model) {
+	SphereEnemy(float acceleration, float deceleration, float maxVelocity, sg::Model* model, sg::Object3D* playerObj)
+		: AbstractEnemy(5, 1.5f, acceleration, deceleration, maxVelocity, model) {
 		_playerObj = playerObj;
 	}
 
 	SphereEnemy(SphereEnemy* temp)
-		: SphereEnemy(temp->_health, temp->_acceleration, temp->_deceleration, temp->_maxVelocity, temp->GetModel(), temp->_playerObj) { }
+		: SphereEnemy(temp->_acceleration, temp->_deceleration, temp->_maxVelocity, temp->GetModel(), temp->_playerObj) { }
 
 	void Update(double dt) override {
 		AbstractEnemy::Update(dt);
@@ -90,8 +109,8 @@ private:
 
 	void InitSpawnPoints() {
 		_spawnPoints.resize(2);
-		_spawnPoints.push_back(glm::vec3(1, 1, 1));
-		_spawnPoints.push_back(glm::vec3(1, 1, -1));
+		_spawnPoints[0] = glm::vec3(1, 1, 1);
+		_spawnPoints[1] = glm::vec3(1, 1, -1);
 	}
 
 	void SpawnEnemies() {
@@ -111,9 +130,9 @@ protected:
 	}
 
 public:
-	LargeEnemy(int health, float acceleration, float deceleration, float maxVelocity, sg::Model* model,
+	LargeEnemy(float acceleration, float deceleration, float maxVelocity, sg::Model* model,
 		float rotSpeed, float cooldownTime, SphereEnemy* templateEnemy, int nEnemies, sg::Renderer* renderer, sg::Entity3D* enemyManager)
-		: AbstractEnemy(health, acceleration, deceleration, maxVelocity, model) {
+		: AbstractEnemy(10, 7.5f, acceleration, deceleration, maxVelocity, model) {
 		_cooldownTime = cooldownTime;
 		_rotSpeed = rotSpeed;
 		_rotAxis = glm::normalize(RandomVec3());

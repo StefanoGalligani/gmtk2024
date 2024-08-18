@@ -30,7 +30,7 @@ private:
 			enemy = new SphereEnemy(_templateSphere);
 			break;
 		case LARGESPHERE:
-			enemy = new LargeEnemy(5, 0, 1, 5, _virusSphereLargeModel, 0.2f, 4, _templateSphere, 2, _renderer, this);
+			enemy = new LargeEnemy(0, 1, 5, _virusSphereLargeModel, 0.2f, 4, _templateSphere, 2, _renderer, this);
 			break;
 		case SMALLICO:
 			break;
@@ -89,13 +89,29 @@ public:
 		_bacteriaModel = new sg::Model();
 		_bacteriaModel->LoadFromObj("bacteria.obj");
 
-		_templateSphere = new SphereEnemy(5, 10, 5, 20, _virusSphereModel, _player->GetObject());
+		_templateSphere = new SphereEnemy(10, 5, 20, _virusSphereModel, _player->GetObject());
 
 		_renderer->AddEntity(this);
 
 		InitSpawnPoints();
 
 		AddEnemy(LARGESPHERE, glm::vec3(20, 20, 20));
+	}
+
+	void AttackEnemies(glm::vec3 position, glm::vec3 direction, int length) {
+		std::vector<sg::Entity3D*> killedEnemies;
+		for (const auto& child : _children) {
+			AbstractEnemy* enemy = dynamic_cast<AbstractEnemy*>(child);
+			bool killed = enemy->TestHit(position, direction, length);
+			if (killed) {
+				killedEnemies.push_back(child);
+			}
+		}
+		for (const auto& child : killedEnemies) {
+			_children.remove(child);
+			_renderer->RemoveObject(dynamic_cast<sg::Object3D*>(child));
+			delete(child);
+		}
 	}
 
 	void Update(double dt) override {

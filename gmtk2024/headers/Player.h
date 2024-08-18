@@ -8,12 +8,15 @@ private:
 	sg::SpotLight3D* _spotLightRight;
 	sg::SpotLight3D* _spotLightLeft;
 	sg::Camera3D* _mainCamera;
+	sg::Object3D* _rayObj;
+	sg::Renderer* _renderer;
 	glm::vec3 _velocity = glm::vec3(0);
 	bool _pressedAccel;
 	float _acceleration;
 	float _deceleration;
 	float _maxVelocity;
 	float _health;
+	int _rayShown;
 
 public:
 	Player(sg::Renderer* renderer, int health, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy) {
@@ -43,10 +46,16 @@ public:
 		_mainCamera->SetLocalPosition(glm::vec3(0, 1, 2));
 		_mainCamera->LookAtLocal(glm::vec3(0, 0, 0));
 
+		_rayObj = new sg::Object3D();
+		_rayObj->LoadModelFromObj("res/models/ray.obj");
+
 		AddChild(_playerObj, false);
 		AddChild(_mainCamera, false);
 		_playerObj->AddChild(_spotLightRight, false);
 		_playerObj->AddChild(_spotLightLeft, false);
+		_playerObj->AddChild(_rayObj, false);
+
+		_renderer = renderer;
 
 		renderer->AddObject(_playerObj);
 		renderer->SetMainCamera(_mainCamera);
@@ -57,6 +66,16 @@ public:
 	}
 
 	sg::Object3D* GetObject() {
+		return _playerObj;
+	}
+
+	void ShowRay() {
+		_rayObj->LookAtGlobal(_rayObj->GetGlobalPosition() + _playerObj->GlobalForward());
+		_renderer->AddObject(_rayObj);
+		_rayShown = 2;
+	}
+
+	sg::Object3D* GetPlayerObj() {
 		return _playerObj;
 	}
 
@@ -71,7 +90,7 @@ public:
 	void ChangeDirection(float x, float y) {
 		RotateGlobal(glm::vec3(0, 1, 0), x);
 		_playerObj->RotateLocal(glm::vec3(1, 0, 0), y);
-		_mainCamera->SetGlobalPosition(_playerObj->GetGlobalPosition() + _playerObj->GlobalUp() - _playerObj->GlobalForward()*2.0f);
+		_mainCamera->SetGlobalPosition(_playerObj->GetGlobalPosition() + _playerObj->GlobalUp() - _playerObj->GlobalForward() * 2.0f);
 		_mainCamera->LookAtGlobal(_playerObj->GetGlobalPosition(), _playerObj->GlobalUp());
 		_spotLightLeft->LookAtGlobal(_spotLightLeft->GetGlobalPosition() + _playerObj->GlobalForward());
 		_spotLightRight->LookAtGlobal(_spotLightRight->GetGlobalPosition() + _playerObj->GlobalForward());
@@ -86,6 +105,10 @@ public:
 		}
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
+
+		if (--_rayShown == 0) {
+			_renderer->RemoveObject(_rayObj);
+		}
 	}
 
 	void UpdateCameraResolution(int resx, int resy) {
@@ -101,5 +124,6 @@ public:
 		delete(_spotLightRight);
 		delete(_spotLightLeft);
 		delete(_mainCamera);
+		delete(_rayObj);
 	}
 };
