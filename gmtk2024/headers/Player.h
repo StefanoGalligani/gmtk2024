@@ -88,8 +88,9 @@ public:
 	}
 
 	void ChangeDirection(float x, float y) {
-		RotateGlobal(glm::vec3(0, 1, 0), x);
+		RotateGlobal(glm::vec3(0, 1, 0), _playerObj->GlobalUp().y * x);
 		_playerObj->RotateLocal(glm::vec3(1, 0, 0), y);
+
 		_mainCamera->SetGlobalPosition(_playerObj->GetGlobalPosition() + _playerObj->GlobalUp() - _playerObj->GlobalForward() * 2.0f);
 		_mainCamera->LookAtGlobal(_playerObj->GetGlobalPosition(), _playerObj->GlobalUp());
 		_spotLightLeft->LookAtGlobal(_spotLightLeft->GetGlobalPosition() + _playerObj->GlobalForward());
