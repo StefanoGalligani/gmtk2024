@@ -231,7 +231,7 @@ protected:
 	}
 
 	virtual glm::vec3 GetCenterOffset() override {
-		return GlobalForward() * 1.5f;
+		return GlobalForward() * 0.75f;
 	}
 
 	float _rotSpeed;
