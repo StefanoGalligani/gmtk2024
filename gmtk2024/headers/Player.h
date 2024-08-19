@@ -105,7 +105,17 @@ public:
 
 		_mainCamera->SetGlobalPosition(_playerObj->GetGlobalPosition() + _playerObj->GlobalUp() - _playerObj->GlobalForward() * 2.0f);
 		_mainCamera->LookAtGlobal(_playerObj->GetGlobalPosition(), _playerObj->GlobalUp());
+
+		_spotLightLeft->SetGlobalPosition(_playerObj->GetGlobalPosition() +
+			-0.354049f * _playerObj->GlobalRight() +
+			0.238036f * _playerObj->GlobalUp() +
+			0.886109f * _playerObj->GlobalForward());
 		_spotLightLeft->LookAtGlobal(_spotLightLeft->GetGlobalPosition() + _playerObj->GlobalForward());
+
+		_spotLightRight->SetGlobalPosition(_playerObj->GetGlobalPosition() +
+			0.354049f * _playerObj->GlobalRight() +
+			0.238036f * _playerObj->GlobalUp() +
+			0.886109f * _playerObj->GlobalForward());
 		_spotLightRight->LookAtGlobal(_spotLightRight->GetGlobalPosition() + _playerObj->GlobalForward());
 	}
 

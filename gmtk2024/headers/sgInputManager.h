@@ -23,6 +23,8 @@ namespace sg {
 	constexpr auto Key_S_Up = 115;
 	constexpr auto Key_D_Down = 116;
 	constexpr auto Key_D_Up = 117;
+	constexpr auto Key_R_Down = 118;
+	constexpr auto Key_R_Up = 119;
 	constexpr auto Window_Resize = 200;
 
 	typedef void (*sgCursorPosFun)(double xpos, double ypos);
@@ -148,6 +150,12 @@ namespace sg {
 				break;
 			case Key_D_Up:
 				f.key = GLFW_KEY_D; f.action = 0;
+				break;
+			case Key_R_Down:
+				f.key = GLFW_KEY_R; f.action = 1;
+				break;
+			case Key_R_Up:
+				f.key = GLFW_KEY_R; f.action = 0;
 				break;
 			default:
 				BindingError();

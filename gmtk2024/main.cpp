@@ -22,13 +22,14 @@ float prevx = -1;
 float prevy = -1;
 int shadowResx = 1024;
 int shadowResy = 1024;
+bool restart = false;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
 
 #define PLAYER_HEALTH 5
-#define PLAYER_ACCELERATION 10
+#define PLAYER_ACCELERATION 15
 #define PLAYER_DECELERATION 4
-#define PLAYER_MAX_VELOCITY 30
+#define PLAYER_MAX_VELOCITY 40
 #define ENEMY_SPEED 4
 #define BULLET_SPEED 50
 #define BULLET_LIFETIME 1
@@ -127,6 +128,10 @@ private:
     }
 
     bool checkGameOver() {
+        if (restart) {
+            restart = false;
+            return true;
+        }
         return player->IsDead();
     }
 
@@ -156,6 +161,7 @@ private:
 
         BindInput(sg::Key_W_Down, onWPressed);
         BindInput(sg::Key_W_Up, onWReleased);
+        BindInput(sg::Key_R_Down, onRPressed);
     }
 
     void BindInput(int cmd, sg::sgKeyOrMouseFun callback) {
@@ -200,6 +206,10 @@ private:
 
     static void onWReleased(int mods) {
         player->SetAccel(false);
+    }
+
+    static void onRPressed(int mods) {
+        restart = true;
     }
 
     static void onMouseDrag(double xpos, double ypos) {

@@ -170,6 +170,7 @@ public:
 	}
 
 	void Update(double dt) override {
+		AbstractEnemy::Update(dt);
 		RotateGlobal(_rotAxis, _rotSpeed * float(dt));
 		_counter += float(dt);
 		if (_counter >= _cooldownTime) {

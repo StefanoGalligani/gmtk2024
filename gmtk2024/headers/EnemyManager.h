@@ -11,6 +11,12 @@ using namespace irrklang;
 #define LARGEICO 3
 #define SHOOTER 4
 
+struct Wave {
+	std::vector<int> enemies;
+	std::vector<int> count;
+	std::vector<int> spawnPoints;
+};
+
 class EnemyManager : public sg::Entity3D {
 private:
 	Player* _player;
@@ -24,8 +30,41 @@ private:
 	SphereEnemy* _templateSphere;
 	SphereEnemy* _templateIco;
 	Bacteria* _templateBacteria;
-	glm::vec3 _spawnPoints[7];
+	std::vector<glm::vec3> _spawnPoints;
 	ISoundEngine* _soundEngine;
+
+	int _waveIndex = 0;
+	std::vector<Wave> _waves;
+
+	void InitSpawnPoints() {
+		_spawnPoints.push_back(glm::vec3(-25, 0, 25));
+		_spawnPoints.push_back(glm::vec3(25, 0, 25));
+		_spawnPoints.push_back(glm::vec3(-35, 0, -25));
+		_spawnPoints.push_back(glm::vec3(35, 0, 0));
+		_spawnPoints.push_back(glm::vec3(35, 0, -20));
+		_spawnPoints.push_back(glm::vec3(-15, 0, -45));
+		_spawnPoints.push_back(glm::vec3(15, 0, -45));
+	}
+
+	void AddToWave(Wave &wave, int type, int n, int spawnPoint) {
+		wave.enemies.push_back(type);
+		wave.count.push_back(n);
+		wave.spawnPoints.push_back(spawnPoint);
+	}
+
+	void InitWaves() {
+		Wave w1;
+		AddToWave(w1, SMALLSPHERE, 2, 0);
+		AddToWave(w1, SMALLSPHERE, 2, 1);
+		AddToWave(w1, SHOOTER, 1, 2);
+
+		Wave w2;
+		AddToWave(w2, LARGEICO, 1, 3);
+		AddToWave(w2, LARGESPHERE, 1, 4);
+
+		_waves.push_back(w1);
+		_waves.push_back(w2);
+	}
 
 	void AddEnemy(int type, glm::vec3 pos) {
 		AbstractEnemy* enemy = NULL;
@@ -45,6 +84,9 @@ private:
 		default:
 			return;
 		}
+		if (glm::length(pos - _player->GetObject()->GetGlobalPosition()) < 5) {
+			pos -= glm::normalize(pos) * 5.0f;
+		}
 		enemy->SetGlobalPosition(pos);
 		enemy->Lit = true;
 		enemy->CastsShadows = true;
@@ -53,29 +95,29 @@ private:
 		_renderer->AddObject(enemy);
 	}
 
-	void InitSpawnPoints() {
-		_spawnPoints[0] = glm::vec3(-25, 0, 25);
-		_spawnPoints[1] = glm::vec3(25, 0, 25);
-		_spawnPoints[2] = glm::vec3(-35, 0, -25);
-		_spawnPoints[3] = glm::vec3(35, 0, 0);
-		_spawnPoints[4] = glm::vec3(35, 0, -20);
-		_spawnPoints[5] = glm::vec3(-15, 0, -45);
-		_spawnPoints[6] = glm::vec3(15, 0, -45);
-	}
-
-	void SpawnEnemy(int type, int n) {
+	void SpawnEnemy(int type, int n, int spawnPoint) {
 		int prevRand = -1;
 		for (int i = 0; i < n; i++) {
-			int rand = -1;
-			do {
-				rand = glm::linearRand(0, 6);
-			} while (rand == prevRand);
-			glm::vec3 pos = _spawnPoints[rand];
+			glm::vec3 pos = _spawnPoints[spawnPoint];
 			AddEnemy(type, pos);
 		}
 	}
 
+	void StartWave() {
+		if (_waveIndex == _waves.size()) {
+			finished = true;
+			return;
+		}
+		Wave w = _waves[_waveIndex];
+		for (int i = 0; i < w.spawnPoints.size(); i++) {
+			SpawnEnemy(w.enemies[i], w.count[i], w.spawnPoints[i]);
+		}
+		_waveIndex++;
+	}
+
 public:
+	bool finished = false;
+
 	EnemyManager(sg::Renderer* renderer, Player* player, ISoundEngine* soundEngine) : Entity3D() {
 		_renderer = renderer;
 		_player = player;
@@ -101,8 +143,9 @@ public:
 		_renderer->AddEntity(this);
 
 		InitSpawnPoints();
+		InitWaves();
 
-		AddEnemy(SHOOTER, glm::vec3(20, 0, 20));
+		StartWave();
 	}
 
 	void AttackEnemies(glm::vec3 position, glm::vec3 direction, int length) {
@@ -148,6 +191,10 @@ public:
 			_children.remove(child);
 			_renderer->RemoveObject(dynamic_cast<sg::Object3D*>(child));
 			delete(child);
+		}
+
+		if(!finished && _children.size() == 0) {
+			StartWave();
 		}
 	}
 
