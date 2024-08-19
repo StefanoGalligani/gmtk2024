@@ -219,7 +219,7 @@ namespace sg {
             _width = width;
             _height = height;
 
-            glClearColor(0, 0, 0, 0);
+            glClearColor(0.7f, 0.3f, 0.3f, 1);
             glViewport(0, 0, width, height);
 
             glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_origFB);

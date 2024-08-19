@@ -27,8 +27,8 @@ ISoundEngine* SoundEngine = createIrrKlangDevice();
 
 #define PLAYER_HEALTH 5
 #define PLAYER_ACCELERATION 10
-#define PLAYER_DECELERATION 2
-#define PLAYER_MAX_VELOCITY 20
+#define PLAYER_DECELERATION 4
+#define PLAYER_MAX_VELOCITY 30
 #define ENEMY_SPEED 4
 #define BULLET_SPEED 50
 #define BULLET_LIFETIME 1
@@ -40,7 +40,8 @@ public:
     void run() {
         if (!initWindow()) return;
         SoundEngine->setSoundVolume(0);
-        SoundEngine->play2D("res/sfx/Gun.wav");
+        SoundEngine->play2D("res/sfx/hit.wav");
+        SoundEngine->play2D("res/sfx/laser.wav");
 
         initGame();
         mainLoop();
@@ -54,7 +55,7 @@ private:
             return -1;
 
         glfwWindowHint(GLFW_SAMPLES, 4);
-        GLFWwindow* window = glfwCreateWindow(resx, resy, "TwinStick", NULL, NULL);
+        GLFWwindow* window = glfwCreateWindow(resx, resy, "Antibiotic", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
@@ -86,9 +87,9 @@ private:
 
     void InitObjects() {
         printf("Initializing objects\n");
-        player = new Player(renderer, PLAYER_HEALTH, 0.05f, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy);
-        enemyManager = new EnemyManager(renderer, player);
         mapCreator = new MapCreator(renderer);
+        player = new Player(renderer, PLAYER_HEALTH, 0.05f, PLAYER_ACCELERATION, PLAYER_DECELERATION, PLAYER_MAX_VELOCITY, shadowResx, shadowResy, resx, resy, mapCreator);
+        enemyManager = new EnemyManager(renderer, player, SoundEngine);
 
         ambientLight = new sg::AmbientLight(1.0f);
         renderer->AddLight(ambientLight);
@@ -118,7 +119,7 @@ private:
 
                 int fps = renderer->RenderFrame();
                 std::stringstream ss{};
-                ss << "TwinStick [" << averageFrameRate(fps) << " FPS]";
+                ss << "Antibiotic [" << averageFrameRate(fps) << " FPS]";
                 glfwSetWindowTitle(renderer->GetWindow(), ss.str().c_str());
             }
             glfwPollEvents();
@@ -130,7 +131,7 @@ private:
     }
 
     void cleanup() {
-        printf("Terminating");
+        printf("Terminating\n");
         delete(player);
         delete(enemyManager);
         delete(bulletModel);
@@ -190,7 +191,7 @@ private:
         enemyManager->AttackEnemies(obj->GetGlobalPosition(), obj->GlobalForward(), 300);
 
         SoundEngine->setSoundVolume(1);
-        SoundEngine->play2D("res/sfx/Gun.wav");
+        SoundEngine->play2D("res/sfx/laser.wav");
     }
 
     static void onWPressed(int mods) {

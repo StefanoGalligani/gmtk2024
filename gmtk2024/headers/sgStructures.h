@@ -304,7 +304,7 @@ namespace sg {
 		float distance = 0.f;
 
 		Plane(glm::vec3 point, glm::vec3 normal) {
-			this->normal = normal;
+			this->normal = glm::normalize(normal);
 			this->distance = glm::dot(this->normal, point);
 		}
 

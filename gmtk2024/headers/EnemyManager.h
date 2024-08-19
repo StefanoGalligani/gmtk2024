@@ -3,6 +3,8 @@
 #include <sgEngine.h>
 #include <Enemies.h>
 #include <Player.h>
+#include <irrKlang.h>
+using namespace irrklang;
 
 #define SMALLSPHERE 1
 #define LARGESPHERE 2
@@ -23,6 +25,7 @@ private:
 	SphereEnemy* _templateIco;
 	Bacteria* _templateBacteria;
 	glm::vec3 _spawnPoints[7];
+	ISoundEngine* _soundEngine;
 
 	void AddEnemy(int type, glm::vec3 pos) {
 		AbstractEnemy* enemy = NULL;
@@ -73,9 +76,10 @@ private:
 	}
 
 public:
-	EnemyManager(sg::Renderer* renderer, Player* player) : Entity3D() {
+	EnemyManager(sg::Renderer* renderer, Player* player, ISoundEngine* soundEngine) : Entity3D() {
 		_renderer = renderer;
 		_player = player;
+		_soundEngine = soundEngine;
 
 		_virusSphereModel = new sg::Model();
 		_virusSphereModel->LoadFromObj("res/models/virus_sphere.obj");
@@ -137,7 +141,8 @@ public:
 
 		if (playerHit) {
 			_player->Damage();
-			//riprodurre suono
+			_soundEngine->setSoundVolume(1);
+			_soundEngine->play2D("res/sfx/hit.wav");
 		}
 		for (const auto& child : killedEnemies) {
 			_children.remove(child);

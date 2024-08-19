@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sgEngine.h>
+#include <MapCreator.h>
 
 class Player : public sg::Entity3D {
 private:
@@ -10,6 +11,7 @@ private:
 	sg::Camera3D* _mainCamera;
 	sg::Object3D* _rayObj;
 	sg::Renderer* _renderer;
+	MapCreator* _mapCreator;
 	bool _pressedAccel;
 	float _acceleration;
 	float _deceleration;
@@ -22,13 +24,15 @@ private:
 	float _baseColor[3];
 
 public:
-	Player(sg::Renderer* renderer, int health, float regenSpeed, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy) {
+	Player(sg::Renderer* renderer, int health, float regenSpeed, float acceleration, float deceleration, float maxVelocity, int shadowResx, int shadowResy, int resx, int resy, MapCreator* mapCreator) {
 		_acceleration = acceleration;
 		_deceleration = deceleration;
 		_maxVelocity = maxVelocity;
 		_maxHealth = float(health);
 		_health = float(health);
 		_regenSpeed = regenSpeed;
+
+		_mapCreator = mapCreator;
 
 		_playerObj = new sg::Object3D();
 		_playerObj->LoadModelFromObj("res/models/ship.obj");
@@ -73,6 +77,8 @@ public:
 		_baseColor[0] = mat->Kd[0];
 		_baseColor[1] = mat->Kd[1];
 		_baseColor[2] = mat->Kd[2];
+
+		SetGlobalPosition(0, 5, 0);
 	}
 
 	sg::Object3D* GetObject() {
@@ -112,6 +118,7 @@ public:
 		}
 		if (glm::length2(_velocity) > _maxVelocity * _maxVelocity) _velocity = glm::normalize(_velocity) * _maxVelocity;
 		TranslateGlobal((float)dt * _velocity);
+		SetGlobalPosition(_mapCreator->GetValidPosition(GetGlobalPosition()));
 
 		if (_rayShown > 0) _rayShown--;
 		if (_rayShown == 0) {
@@ -148,6 +155,6 @@ public:
 		delete(_rayObj);
 	}
 
-	float radius = 0.8f;
+	float radius = 1.2f;
 	glm::vec3 _velocity = glm::vec3(0);
 };

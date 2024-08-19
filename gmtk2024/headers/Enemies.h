@@ -231,7 +231,7 @@ protected:
 	}
 
 	virtual glm::vec3 GetCenterOffset() override {
-		return GlobalForward() * 0.75f;
+		return -GlobalForward() * 2.9f;
 	}
 
 	float _rotSpeed;
@@ -243,6 +243,7 @@ public:
 		_rotSpeed = rotSpeed;
 		_playerObj = playerObj;
 		_direction = glm::normalize(_playerObj->GetGlobalPosition() - initialPosition);
+		LookAtGlobal(_playerObj->GetGlobalPosition());
 	}
 
 	Bacteria(Bacteria* b, glm::vec3 initialPosition)
@@ -251,8 +252,9 @@ public:
 
 	void Update(double dt) override {
 		_direction += glm::normalize(_playerObj->GetGlobalPosition() - GetGlobalPosition());
+		glm::vec3 prevPos = GetGlobalPosition();
 		AbstractEnemy::Update(dt);
-		LookAtGlobal(_direction);
+		LookAtGlobal(GetGlobalPosition() * 2.0f - prevPos);
 	}
 };
 
@@ -276,12 +278,12 @@ private:
 protected:
 
 	virtual glm::vec3 GetCenterOffset() override {
-		return GlobalUp() * 3.5f;
+		return GlobalUp() * 5.0f;
 	}
 
 public:
 	ShooterEnemy(sg::Model* model, float cooldownTime, Bacteria* templateEnemy, sg::Renderer* renderer, sg::Entity3D* enemyManager, sg::Object3D* playerObj)
-		: AbstractEnemy(4, 2.8f, 0, 0, 0, model) {
+		: AbstractEnemy(4, 3, 0, 0, 0, model) {
 		_cooldownTime = cooldownTime;
 		_renderer = renderer;
 		_enemyManager = enemyManager;
