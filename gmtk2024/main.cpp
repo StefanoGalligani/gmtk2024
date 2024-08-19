@@ -23,8 +23,10 @@ float prevy = -1;
 int shadowResx = 1024;
 int shadowResy = 1024;
 bool restart = false;
+bool endScreenShown = false;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
+ISound* engineSound = NULL;
 
 #define PLAYER_HEALTH 5
 #define PLAYER_ACCELERATION 15
@@ -43,6 +45,8 @@ public:
         SoundEngine->setSoundVolume(0);
         SoundEngine->play2D("res/sfx/hit.wav");
         SoundEngine->play2D("res/sfx/laser.wav");
+        SoundEngine->play2D("res/sfx/engine.wav");
+        BindInputs();
 
         initGame();
         mainLoop();
@@ -81,7 +85,6 @@ private:
     }
 
     void initGame() {
-        BindInputs();
         InitObjects();
         glfwSetInputMode(renderer->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
@@ -117,6 +120,11 @@ private:
                     cleanup();
                     initGame();
                 }
+                if (enemyManager->finished && !endScreenShown) {
+                    endScreenShown = true;
+                    renderer->RemoveAllEntities();
+                    renderer->AddEndScreen();
+                }
 
                 int fps = renderer->RenderFrame();
                 std::stringstream ss{};
@@ -143,6 +151,8 @@ private:
         delete(mapCreator);
         delete(ambientLight);
         renderer->RemoveAllEntities();
+        if (engineSound != NULL) engineSound->setIsPaused(true);
+        endScreenShown = false;
     }
 
     void closeApplication() {
@@ -192,6 +202,7 @@ private:
     }
 
     static void onLeftMouseButtonClick(int mods) {
+        if (endScreenShown) return;
         player->ShowRay();
         sg::Object3D* obj = player->GetObject();
         enemyManager->AttackEnemies(obj->GetGlobalPosition(), obj->GlobalForward(), 300);
@@ -201,10 +212,17 @@ private:
     }
 
     static void onWPressed(int mods) {
+        if (endScreenShown) return;
         player->SetAccel(true);
+        if (engineSound == NULL) {
+            engineSound = SoundEngine->play2D("res/sfx/engine.wav", true, true);
+        }
+        SoundEngine->setSoundVolume(1);
+        engineSound->setIsPaused(false);
     }
 
     static void onWReleased(int mods) {
+        engineSound->setIsPaused(true);
         player->SetAccel(false);
     }
 

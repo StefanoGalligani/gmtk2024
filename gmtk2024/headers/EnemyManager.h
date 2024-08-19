@@ -37,13 +37,13 @@ private:
 	std::vector<Wave> _waves;
 
 	void InitSpawnPoints() {
-		_spawnPoints.push_back(glm::vec3(-25, 0, 25));
-		_spawnPoints.push_back(glm::vec3(25, 0, 25));
-		_spawnPoints.push_back(glm::vec3(-35, 0, -25));
-		_spawnPoints.push_back(glm::vec3(35, 0, 0));
-		_spawnPoints.push_back(glm::vec3(35, 0, -20));
-		_spawnPoints.push_back(glm::vec3(-15, 0, -45));
-		_spawnPoints.push_back(glm::vec3(15, 0, -45));
+		_spawnPoints.push_back(glm::vec3(-25, 10, 25));
+		_spawnPoints.push_back(glm::vec3(25, 10, 25));
+		_spawnPoints.push_back(glm::vec3(-35, 10, -25));
+		_spawnPoints.push_back(glm::vec3(35, 10, 0));
+		_spawnPoints.push_back(glm::vec3(35, 10, -20));
+		_spawnPoints.push_back(glm::vec3(-15, 10, -45));
+		_spawnPoints.push_back(glm::vec3(15, 10, -45));
 	}
 
 	void AddToWave(Wave &wave, int type, int n, int spawnPoint) {

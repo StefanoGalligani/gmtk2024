@@ -368,6 +368,17 @@ namespace sg {
                 _ambientLights.erase(_ambientLights.begin());
         }
 
+        void AddEndScreen() {
+            sg::Object3D* endingPlane = new Object3D();
+            endingPlane->LoadModelFromObj("res/models/endscreen.obj");
+            endingPlane->PerformFrustumCheck = false;
+            endingPlane->SetGlobalPosition(0, 0, -1);
+            AddObject(endingPlane);
+
+            sg::Camera3D* camera = new Camera3D(3.1415926535f/2.0f, 16.0f / 9.0f, 0.05, 2);
+            SetMainCamera(camera);
+        }
+
         int RenderFrame() {
             double start = sg::getCurrentTimeMillis();
 

@@ -36,9 +36,9 @@ public:
 
 		_playerObj = new sg::Object3D();
 		_playerObj->LoadModelFromObj("res/models/ship.obj");
-		_playerObj->Lit = true;
-		_playerObj->CastsShadows = true;
-		_playerObj->ReceivesShadows = false;
+		//_playerObj->Lit = true;
+		//_playerObj->CastsShadows = true;
+		//_playerObj->ReceivesShadows = false;
 		_playerObj->SetGlobalPosition(0, 0, 0);
 
 		_spotLightRight = new sg::SpotLight3D(shadowResx, shadowResy, 3.14f / 10, (float)shadowResx / shadowResy, 0.05f, 300.0f);

@@ -134,9 +134,13 @@ private:
 	sg::Entity3D* _enemyManager;
 
 	void InitSpawnPoints() {
-		_spawnPoints.resize(2);
-		_spawnPoints[0] = glm::vec3(1, 1, 1);
-		_spawnPoints[1] = glm::vec3(1, 1, -1);
+		_spawnPoints.resize(6);
+		_spawnPoints[0] = glm::vec3(13, 0, 0);
+		_spawnPoints[1] = glm::vec3(0, 13, 0);
+		_spawnPoints[1] = glm::vec3(0, 0, 13);
+		_spawnPoints[0] = glm::vec3(-13, 0, 0);
+		_spawnPoints[1] = glm::vec3(0, -13, 0);
+		_spawnPoints[1] = glm::vec3(0, 0, -13);
 	}
 
 	void SpawnEnemies() {

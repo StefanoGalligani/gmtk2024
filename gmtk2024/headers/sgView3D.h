@@ -90,6 +90,7 @@ namespace sg {
 			_aspectRatio = aspectRatio;
 			_nearPlane = nearPlane;
 			_farPlane = farPlane;
+			UpdateView();
 		}
 
 		sg::Frustum GetFrustum() {
