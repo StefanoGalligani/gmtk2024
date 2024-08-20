@@ -78,7 +78,8 @@ public:
 		_baseColor[1] = mat->Kd[1];
 		_baseColor[2] = mat->Kd[2];
 
-		SetGlobalPosition(0, 5, 0);
+		SetGlobalPosition(0, 25, 0);
+		LookAtGlobal(glm::vec3(-10, 25, 5));
 	}
 
 	sg::Object3D* GetObject() {

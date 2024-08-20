@@ -49,6 +49,10 @@ public:
 		_originalColor[2] = GetMaterialReferenceAt(0)->Kd[2];
 	}
 
+	bool IsDead() {
+		return _health <= 0;
+	}
+
 	bool Damage(int dmg) {
 		_health -= dmg;
 		if (_health <= 0) {
@@ -162,7 +166,7 @@ protected:
 public:
 	LargeEnemy(float acceleration, float deceleration, float maxVelocity, sg::Model* model,
 		float rotSpeed, float cooldownTime, SphereEnemy* templateEnemy, int nEnemies, sg::Renderer* renderer, sg::Entity3D* enemyManager)
-		: AbstractEnemy(10, 7.5f, acceleration, deceleration, maxVelocity, model) {
+		: AbstractEnemy(20, 7.5f, acceleration, deceleration, maxVelocity, model) {
 		_cooldownTime = cooldownTime;
 		_rotSpeed = rotSpeed;
 		_rotAxis = glm::normalize(RandomVec3());
@@ -229,6 +233,7 @@ public:
 class Bacteria : public AbstractEnemy { //aggiungere Time to live, con cambiamento di scala verso lo 0
 private:
 	glm::vec3 _direction;
+	float _timeToLive = 15;
 
 protected:
 	virtual glm::vec3 GetDirection() override {
@@ -244,7 +249,7 @@ protected:
 
 public:
 	Bacteria(float maxVelocity, float rotSpeed, glm::vec3 initialPosition, sg::Model* model, sg::Object3D* playerObj)
-		: AbstractEnemy(1, 1.5f, 100, 0, maxVelocity, model) {
+		: AbstractEnemy(1, 1.5f, 100, 20, maxVelocity, model) {
 		_rotSpeed = rotSpeed;
 		_playerObj = playerObj;
 		_direction = glm::normalize(_playerObj->GetGlobalPosition() - initialPosition);
@@ -260,6 +265,8 @@ public:
 		glm::vec3 prevPos = GetGlobalPosition();
 		AbstractEnemy::Update(dt);
 		LookAtGlobal(GetGlobalPosition() * 2.0f - prevPos);
+		_timeToLive -= float(dt);
+		if (_timeToLive <= 0) Damage(1);
 	}
 };
 

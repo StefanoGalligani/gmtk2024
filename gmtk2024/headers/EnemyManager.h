@@ -37,13 +37,20 @@ private:
 	std::vector<Wave> _waves;
 
 	void InitSpawnPoints() {
-		_spawnPoints.push_back(glm::vec3(-25, 10, 25));
-		_spawnPoints.push_back(glm::vec3(25, 10, 25));
-		_spawnPoints.push_back(glm::vec3(-35, 10, -25));
-		_spawnPoints.push_back(glm::vec3(35, 10, 0));
-		_spawnPoints.push_back(glm::vec3(35, 10, -20));
-		_spawnPoints.push_back(glm::vec3(-15, 10, -45));
-		_spawnPoints.push_back(glm::vec3(15, 10, -45));
+		_spawnPoints.push_back(glm::vec3(7, 0.5f, -85));
+		_spawnPoints.push_back(glm::vec3(10, 0, 18));
+		_spawnPoints.push_back(glm::vec3(-95, 0.3f, 50));
+		_spawnPoints.push_back(glm::vec3(-159, 0, -0.8f));
+		_spawnPoints.push_back(glm::vec3(-87, 4, -65));
+
+		_spawnPoints.push_back(glm::vec3(8.5f, 30, -33.5f));
+		_spawnPoints.push_back(glm::vec3(-42.5f, 30, 34));
+		_spawnPoints.push_back(glm::vec3(-127, 30, 25));
+		_spawnPoints.push_back(glm::vec3(-123, 30, -33));
+		_spawnPoints.push_back(glm::vec3(-40, 30, -75));
+
+		_spawnPoints.push_back(glm::vec3(-20, 25, -15));
+		_spawnPoints.push_back(glm::vec3(-80, 25, 0));
 	}
 
 	void AddToWave(Wave &wave, int type, int n, int spawnPoint) {
@@ -54,16 +61,47 @@ private:
 
 	void InitWaves() {
 		Wave w1;
-		AddToWave(w1, SMALLSPHERE, 2, 0);
-		AddToWave(w1, SMALLSPHERE, 2, 1);
-		AddToWave(w1, SHOOTER, 1, 2);
+		AddToWave(w1, SMALLSPHERE, 1, 9);
+		AddToWave(w1, SMALLSPHERE, 1, 7);
+		AddToWave(w1, SMALLSPHERE, 1, 8);
 
 		Wave w2;
-		AddToWave(w2, LARGEICO, 1, 3);
-		AddToWave(w2, LARGESPHERE, 1, 4);
+		AddToWave(w2, SMALLSPHERE, 1, 6);
+		AddToWave(w2, LARGEICO, 1, 7);
+		AddToWave(w2, SMALLSPHERE, 1, 8);
+		AddToWave(w2, LARGEICO, 1, 9);
+		AddToWave(w2, SMALLSPHERE, 1, 10);
+
+		Wave w3;
+		AddToWave(w3, LARGEICO, 1, 6);
+		AddToWave(w3, LARGEICO, 1, 7);
+		AddToWave(w3, LARGEICO, 1, 8);
+		AddToWave(w3, LARGEICO, 1, 9);
+		AddToWave(w3, SHOOTER, 1, 0);
+
+		Wave w4;
+		AddToWave(w4, SHOOTER, 1, 1);
+		AddToWave(w4, SHOOTER, 1, 2);
+		AddToWave(w4, SHOOTER, 1, 4);
+
+		Wave w5;
+		AddToWave(w5, LARGESPHERE, 1, 10);
+
+		Wave w6;
+		AddToWave(w6, SHOOTER, 1, 0);
+		AddToWave(w6, SHOOTER, 1, 3);
+		AddToWave(w6, LARGESPHERE, 1, 10);
+		AddToWave(w6, LARGESPHERE, 1, 11);
+		AddToWave(w6, LARGEICO, 1, 6);
+		AddToWave(w6, LARGEICO, 1, 7);
+		AddToWave(w6, LARGEICO, 1, 9);
 
 		_waves.push_back(w1);
 		_waves.push_back(w2);
+		_waves.push_back(w3);
+		_waves.push_back(w4);
+		_waves.push_back(w5);
+		_waves.push_back(w6);
 	}
 
 	void AddEnemy(int type, glm::vec3 pos) {
@@ -73,7 +111,7 @@ private:
 			enemy = new SphereEnemy(_templateSphere);
 			break;
 		case LARGESPHERE:
-			enemy = new LargeEnemy(0, 1, 5, _virusSphereLargeModel, 0.2f, 4, _templateSphere, 2, _renderer, this);
+			enemy = new LargeEnemy(0, 1, 5, _virusSphereLargeModel, 0.2f, 3, _templateSphere, 2, _renderer, this);
 			break;
 		case LARGEICO:
 			enemy = new SplittingEnemy(8, 4, 30, _virusIcoLargeModel, _templateIco, _renderer, this, _player->GetObject());
@@ -96,7 +134,6 @@ private:
 	}
 
 	void SpawnEnemy(int type, int n, int spawnPoint) {
-		int prevRand = -1;
 		for (int i = 0; i < n; i++) {
 			glm::vec3 pos = _spawnPoints[spawnPoint];
 			AddEnemy(type, pos);
@@ -136,8 +173,8 @@ public:
 		_bacteriaModel = new sg::Model();
 		_bacteriaModel->LoadFromObj("res/models/bacteria.obj");
 
-		_templateSphere = new SphereEnemy(10, 5, 20, _virusSphereModel, _player->GetObject());
-		_templateIco = new SphereEnemy(8, 4, 30, _virusIcoSmallModel, _player->GetObject());
+		_templateSphere = new SphereEnemy(10, 5, 25, _virusSphereModel, _player->GetObject());
+		_templateIco = new SphereEnemy(10, 6, 20, _virusIcoSmallModel, _player->GetObject());
 		_templateBacteria = new Bacteria(30, 0.2f, glm::vec3(0), _bacteriaModel, _player->GetObject());
 
 		_renderer->AddEntity(this);
@@ -178,8 +215,9 @@ public:
 				glm::vec3 pDeltaVelocity = -2.0f * glm::dot(_player->_velocity, -pToEnemy) / distance + enemy->_velocity;
 				enemy->_velocity = newEnemyVelocity;
 				_player->_velocity += pDeltaVelocity;
-				if (enemy->Damage(1)) killedEnemies.push_back(child);
+				enemy->Damage(1);
 			}
+			if (enemy->IsDead()) killedEnemies.push_back(child);
 		}
 
 		if (playerHit) {

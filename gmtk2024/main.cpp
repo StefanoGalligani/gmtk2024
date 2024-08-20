@@ -13,7 +13,6 @@ MapCreator* mapCreator;
 sg::Model* bulletModel;
 sg::AmbientLight* ambientLight;
 
-bool showTriangulation = false;
 bool minimized = false;
 
 float resx = 1080;
@@ -164,7 +163,6 @@ private:
 #pragma region input
     void BindInputs() {
         BindInput(sg::Key_Esc_Down, onEscKeyPressed);
-        BindInput(sg::Key_Space_Down, onSpaceKeyPressed);
         BindInput(sg::Mouse_Left_Down, onLeftMouseButtonClick);
         BindInput(sg::Mouse_Position, onMouseDrag);
         BindInput(sg::Window_Resize, onWindowResize);
@@ -186,11 +184,6 @@ private:
 
     static void onEscKeyPressed(int mods) {
         renderer->DestroyWindow();
-    }
-
-    static void onSpaceKeyPressed(int mods) {
-        showTriangulation = !showTriangulation;
-        renderer->SetShowTriangulation(showTriangulation);
     }
 
     static void onWindowResize(int x, int y) {
